@@ -3,7 +3,6 @@ __all__ = "SnmpConnection"
 import asyncio
 from typing import Optional, cast
 
-from .exceptions import SnmpConnectionError
 from .protocols import SnmpProtocol
 
 DEFAULT_TIMEOUT = 1
@@ -42,15 +41,9 @@ class SnmpConnection:
             lambda: SnmpProtocol(self.timeout, self.retries),
             remote_addr=(self.host, self.port),
         )
-        try:
-            transport, protocol = await asyncio.wait_for(
-                connect_future, timeout=self.timeout
-            )
-        except OSError as e:
-            self.close()
-            raise SnmpConnectionError(
-                f"Error connecting to {self.host} on port {self.port}: {e}"
-            )
+        transport, protocol = await asyncio.wait_for(
+            connect_future, timeout=self.timeout
+        )
 
         self._protocol = cast(SnmpProtocol, protocol)
         self._transport = cast(asyncio.DatagramTransport, transport)

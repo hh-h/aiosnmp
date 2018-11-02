@@ -1,5 +1,4 @@
 __all__ = (
-    "SnmpConnectionError",
     "SnmpTimeoutError",
     "SnmpUnsupportedValueType",
     "SnmpErrorTooBig",
@@ -26,10 +25,6 @@ from asyncio import TimeoutError
 
 
 class SnmpException(Exception):
-    pass
-
-
-class SnmpConnectionError(SnmpException, ConnectionError):
     pass
 
 
