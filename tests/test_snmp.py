@@ -59,7 +59,7 @@ async def test_snmp_get_bulk(host: str, port: int, max_repetitions: int) -> None
 @pytest.mark.asyncio
 @pytest.mark.parametrize("max_repetitions", (1, 2, 5, 10, 25))
 async def test_snmp_bulk_walk(host: str, port: int, max_repetitions: int) -> None:
-    snmp = Snmp(host=host, port=port, max_repetitions=max_repetitions)
+    snmp = Snmp(host=host, port=port, timeout=3, max_repetitions=max_repetitions)
     results = await snmp.bulk_walk(".1.3.6.1.2.1.1.9")
     assert len(results) == 30
     for res in results:
@@ -165,7 +165,7 @@ async def test_snmp_multiple_oids(
 async def test_snmp_set(
     host: str, port: int, varbinds: List[Tuple[str, Union[int, str, bytes]]]
 ) -> None:
-    snmp = Snmp(host=host, port=port, community="private")
+    snmp = Snmp(host=host, port=port, timeout=3, community="private")
     results = await snmp.set(varbinds)
     assert len(results) == len(varbinds)
     for varbind, res in zip(varbinds, results):
