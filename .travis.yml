@@ -1,0 +1,71 @@
+language: python
+services:
+- docker
+cache: pip
+matrix:
+  include:
+  - python: '3.6'
+    env: EVENT_LOOP=asyncio
+  - python: 3.6-dev
+    env: EVENT_LOOP=asyncio
+  - python: '3.7'
+    dist: xenial
+    env: EVENT_LOOP=asyncio
+  - python: 3.7-dev
+    dist: xenial
+    env: EVENT_LOOP=asyncio
+  - python: nightly
+    env: EVENT_LOOP=asyncio
+  - python: '3.6'
+    env: EVENT_LOOP=uvloop
+    addons:
+      apt:
+        packages:
+        - libuv-dev
+  - python: 3.6-dev
+    env: EVENT_LOOP=uvloop
+    addons:
+      apt:
+        packages:
+        - libuv-dev
+  - python: '3.7'
+    env: EVENT_LOOP=uvloop
+    dist: xenial
+    addons:
+      apt:
+        packages:
+        - libuv-dev
+  - python: 3.7-dev
+    env: EVENT_LOOP=uvloop
+    dist: xenial
+    addons:
+      apt:
+        packages:
+        - libuv-dev
+  - python: nightly
+    env: EVENT_LOOP=uvloop
+    addons:
+      apt:
+        packages:
+        - libuv-dev
+  fast_finish: true
+  allow_failures:
+  - python: 3.7-dev
+    env: EVENT_LOOP=asyncio
+  - python: 3.7-dev
+    env: EVENT_LOOP=uvloop
+  - python: nightly
+    env: EVENT_LOOP=asyncio
+  - python: nightly
+    env: EVENT_LOOP=uvloop
+install:
+- pip install tox-travis tox-docker
+script: tox
+deploy:
+  provider: pypi
+  user: hh-h
+  password:
+    secure: a1XmRArI0yXtB8y42JdiEb4cAqVjXPA45EccqB8Kf0YGpb/E8ueWY2RX9ixrldqDfF6e4PdU1tn4LGBtPFMID36SNrXwbUvlgEGXJrH9/tH5kBjXPgXfIFHEvnuGcdCc7QlISa2+lYGV3YbwBeXagig6XkC5LC+vUcvMiqL1eTluTtCTNPpgaapYJdGMYIpHCMs19S1KieIeulYxJwjfFhIXBVQ3F5CNTK2C+XqA4M4S7W2HMWCH8mbXQ8DWdakkUiYD8Nmt9GOwEgqa5m80yxIthYicYRzjZ3rRpIH0eVtmTQlwkarF+DH1hC4D/r50Jqso0S3b+WcHtJv2a5Wjsdw0Xjv/vzKE4kBjsFCg3OPgbRxf5ItHbcE7blaBXKJU+/Tl2qshLO8Mx1xxlH7lFHgaf1dWQ5ZKsbsYQ+TVoLNFtHmpd3RfHuVkharlnCbPmZQCrxp7GNx9khNmBWIV0OLd+4gs349GS0CbCrQEvDBm4kXEv7cmu1af2RsIFOhCC6jZuJ/Jbk084oplEhVdq5nocGJDR7krk2WzOSuQCbShxFIeQsBhIijAP6xJTYokGPrSiMKiSkm8QiDF2YyiWIH56m7R1ATCHQpDz/4mRXcFxpaeX0BHEkxogVxB4cXh9sMT97W89ogM+ifbFNpRS6F0SiX96/+c26cgYANs99g=
+  distributions: sdist bdist_wheel
+  on:
+    tags: true
