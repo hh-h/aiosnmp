@@ -24,7 +24,7 @@ class SnmpConnection:
         self,
         *,
         host: str,
-        port: int,
+        port: int = 161,
         timeout: float = DEFAULT_TIMEOUT,
         retries: int = DEFAULT_RETRIES,
     ) -> None:
