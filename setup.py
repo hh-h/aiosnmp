@@ -1,5 +1,8 @@
 import aiosnmp
+from pathlib import Path
 from setuptools import setup
+
+readme = Path(__file__).with_name('README.md')
 
 setup(
     name='aiosnmp',
@@ -9,7 +12,8 @@ setup(
     license='MIT',
     author='Valetov Konstantin',
     author_email='forjob@thetrue.name',
-    description='Asynchronous library for SnmpV2 commands and a SnmpV2Trap server',
+    description='asyncio SNMP client',
+    long_description=readme.read_text('utf-8'),
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
     classifiers=[
@@ -18,9 +22,10 @@ setup(
         'Programming Language :: Python :: 3 :: Only',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Operating System :: POSIX',
         'Operating System :: MacOS :: MacOS X',
         'Framework :: AsyncIO',
-    ]
+    ],
+    python_requires='>=3.6'
 )
