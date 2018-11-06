@@ -8,7 +8,7 @@ aiosnmp is an asynchronous SNMP client for use with asyncio.
 
 ## Installation
 ```shell
-pip install asyncpg
+pip install aiosnmp
 ```
 
 ## Notice
@@ -29,7 +29,7 @@ loop = asyncio.get_event_loop()
 loop.run_until_complete(main())
 ```
 
-more [**/examples**](https://github.com/hh-h/aiosnmp/tree/master/aiosnmp)
+more in [**/examples**](https://github.com/hh-h/aiosnmp/tree/master/aiosnmp)
 
 ## TODO
 * documentation
