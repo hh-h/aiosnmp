@@ -29,7 +29,7 @@ loop = asyncio.get_event_loop()
 loop.run_until_complete(main())
 ```
 
-more in [**/examples**](https://github.com/hh-h/aiosnmp/tree/master/aiosnmp)
+more in [**/examples**](https://github.com/hh-h/aiosnmp/tree/master/examples)
 
 ## TODO
 * documentation
