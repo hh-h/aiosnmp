@@ -12,6 +12,7 @@ __all__ = (
 )
 
 import enum
+import ipaddress
 import random
 from typing import List, Optional, Union
 
@@ -39,9 +40,13 @@ class PDUType(enum.IntEnum):
 class SnmpVarbind:
     __slots__ = ("_oid", "value")
 
-    def __init__(self, oid: str, value: Union[str, int, bytes, None] = None) -> None:
+    def __init__(
+        self,
+        oid: str,
+        value: Union[None, str, int, bytes, ipaddress.IPv4Address] = None,
+    ) -> None:
         self._oid: str = oid.lstrip(".")
-        self.value: Union[str, int, bytes, None] = value
+        self.value: Union[None, str, int, bytes, ipaddress.IPv4Address] = value
 
     @property
     def oid(self) -> str:

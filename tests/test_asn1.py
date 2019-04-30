@@ -132,6 +132,12 @@ class TestEncoder:
         res = enc.output()
         assert res == b"\x06\x0a\x2a\x86\x48\x86\xf7\x12\x01\x02\x01\x01"
 
+    def test_ipaddress(self) -> None:
+        enc = asn1.Encoder()
+        enc.write(ipaddress.IPv4Address("127.0.0.1"), asn1.Number.IPAddress)
+        res = enc.output()
+        assert res == b"\x40\x04\x7f\x00\x00\x01"
+
     def test_enumerated(self) -> None:
         enc = asn1.Encoder()
         enc.write(1, asn1.Number.Enumerated)
@@ -190,13 +196,6 @@ class TestEncoder:
             enc.write(1)
         res = enc.output()
         assert res == b"\xe1\x03\x02\x01\x01"
-
-    def test_long_tag_id(self) -> None:
-        enc = asn1.Encoder()
-        with enc.enter(0xFFFF):
-            enc.write(1)
-        res = enc.output()
-        assert res == b"\x3f\x83\xff\x7f\x03\x02\x01\x01"
 
     def test_long_tag_length(self) -> None:
         enc = asn1.Encoder()
