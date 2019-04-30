@@ -154,6 +154,7 @@ async def test_snmp_multiple_oids(
         [(".1.3.6.1.4.1.8072.2.255.2.1.2.1", 42)],
         [(".1.3.6.1.4.1.8072.2.255.2.1.3.1", ".1.3.6.1.4.1.8072.2.255.99")],
         [(".1.3.6.1.4.1.8072.2.255.3.0", 363136200)],
+        [(".1.3.6.1.4.1.8072.2.255.4.0", ipaddress.IPv4Address("127.0.0.1"))],
         [(".1.3.6.1.4.1.8072.2.255.5.0", 42)],
         [(".1.3.6.1.4.1.8072.2.255.6.0", 42)],
         [
@@ -175,3 +176,71 @@ async def test_snmp_set(
             if not isinstance(varbind[1], str)
             else varbind[1].encode()
         )
+
+
+@pytest.mark.asyncio
+async def test_snmp_get_no_leading_dot(host: str, port: int) -> None:
+    snmp = Snmp(host=host, port=port)
+    results = await snmp.get("1.3.6.1.4.1.8072.2.255.2.1.2.1")
+    assert len(results) == 1
+    res = results[0]
+    assert res.oid == ".1.3.6.1.4.1.8072.2.255.2.1.2.1"
+    assert res.value == 42
+
+    results = await snmp.get(["1.3.6.1.4.1.8072.2.255.2.1.2.1"])
+    assert len(results) == 1
+    res = results[0]
+    assert res.oid == ".1.3.6.1.4.1.8072.2.255.2.1.2.1"
+    assert res.value == 42
+
+
+@pytest.mark.asyncio
+async def test_snmp_get_next_no_leading_dot(host: str, port: int) -> None:
+    snmp = Snmp(host=host, port=port)
+    results = await snmp.get_next("1.3.6.1.2.1.1")
+    assert len(results) == 1
+    res = results[0]
+    assert res.oid.startswith(".1.3.6.1.2.1.1")
+    assert res.value is not None
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("max_repetitions", (1, 2, 5, 10, 25))
+async def test_snmp_get_bulk_no_leading_dot(
+    host: str, port: int, max_repetitions: int
+) -> None:
+    snmp = Snmp(host=host, port=port, max_repetitions=max_repetitions)
+    results = await snmp.get_bulk("1.3.6.1.2.1.1")
+    assert len(results) == max_repetitions
+    for res in results:
+        assert res.oid.startswith(".1.3.6.1.2.1.1")
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("max_repetitions", (1, 2, 5, 10, 25))
+async def test_snmp_bulk_walk_no_leading_dot(
+    host: str, port: int, max_repetitions: int
+) -> None:
+    snmp = Snmp(host=host, port=port, timeout=3, max_repetitions=max_repetitions)
+    results = await snmp.bulk_walk("1.3.6.1.2.1.1.9")
+    assert len(results) == 30
+    for res in results:
+        assert res.oid.startswith(".1.3.6.1.2.1.1.9")
+
+
+@pytest.mark.asyncio
+async def test_snmp_walk_no_leading_dot(host: str, port: int) -> None:
+    snmp = Snmp(host=host, port=port)
+    results = await snmp.walk("1.3.6.1.2.1.1.9.1.4")
+    assert len(results) == 10
+    for res in results:
+        assert res.oid.startswith(".1.3.6.1.2.1.1.9.1.4")
+
+
+@pytest.mark.asyncio
+async def test_snmp_set_no_leading_dot(host: str, port: int) -> None:
+    snmp = Snmp(host=host, port=port, timeout=3, community="private")
+    results = await snmp.set([("1.3.6.1.4.1.8072.2.255.2.1.2.1", 42)])
+    assert len(results) == 1
+    assert results[0].oid == ".1.3.6.1.4.1.8072.2.255.2.1.2.1"
+    assert results[0].value == 42

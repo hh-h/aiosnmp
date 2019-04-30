@@ -157,6 +157,8 @@ class Encoder:
                 nr = Number.OctetString
             elif value is None:
                 nr = Number.Null
+            elif isinstance(value, ipaddress.IPv4Address):
+                nr = Number.IPAddress
             else:
                 raise Error(f"Cannot determine Number for value type {type(value)}")
         if typ is None:
@@ -192,28 +194,11 @@ class Encoder:
 
     def _emit_tag(self, nr: TNumber, typ: TType, cls: TClass) -> None:
         """Emit a tag."""
-        if nr < 31:
-            self._emit_tag_short(nr, typ, cls)
-        else:
-            self._emit_tag_long(nr, typ, cls)
+        self._emit_tag_short(nr, typ, cls)
 
     def _emit_tag_short(self, nr: TNumber, typ: TType, cls: TClass) -> None:
-        """Emit a short (< 31 bytes) tag."""
-        assert nr < 31
+        """Emit a short tag."""
         self._emit(bytes([nr | typ | cls]))
-
-    def _emit_tag_long(self, nr: TNumber, typ: TType, cls: TClass) -> None:
-        """Emit a long (>= 31 bytes) tag."""
-        head = bytes([typ | cls | 0x1F])
-        self._emit(head)
-        values = [(nr & 0x7F)]
-        nr >>= 7
-        while nr:
-            values.append((nr & 0x7F) | 0x80)
-            nr >>= 7
-        values.reverse()
-        for val in values:
-            self._emit(bytes([val]))
 
     def _emit_length(self, length: int) -> None:
         """Emit length octets."""
@@ -258,6 +243,8 @@ class Encoder:
             return self._encode_null()
         elif nr == Number.ObjectIdentifier:
             return self._encode_object_identifier(value)
+        elif nr == Number.IPAddress:
+            return self._encode_ipaddress(value)
         raise Error(f"Unhandled Number {nr} value {value}")
 
     @staticmethod
@@ -328,6 +315,11 @@ class Encoder:
                 result.append(0x80 | (cmp_data & 0x7F))
         result.reverse()
         return bytes(result)
+
+    @staticmethod
+    def _encode_ipaddress(value: ipaddress.IPv4Address) -> bytes:
+        """Encode an ip address."""
+        return int(value).to_bytes(4, byteorder="big")
 
 
 class Decoder:

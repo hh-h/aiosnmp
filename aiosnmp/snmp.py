@@ -1,5 +1,6 @@
 __all__ = "Snmp"
 
+import ipaddress
 from typing import Any, List, Optional, Tuple, Union
 
 from .connection import SnmpConnection
@@ -80,11 +81,12 @@ class Snmp(SnmpConnection):
         message = SnmpMessage(
             self.version, self.community, GetNextRequest([SnmpVarbind(oid)])
         )
+        base_oid = oid if oid.startswith(".") else f".{oid}"
         vbs = await self._send(message)
         next_oid = vbs[0].oid
-        if not next_oid.startswith(f"{oid}."):
+        if not next_oid.startswith(f"{base_oid}."):
             message = SnmpMessage(
-                self.version, self.community, GetRequest([SnmpVarbind(oid)])
+                self.version, self.community, GetRequest([SnmpVarbind(base_oid)])
             )
             return await self._send(message)
 
@@ -95,18 +97,18 @@ class Snmp(SnmpConnection):
             )
             vbs = await self._send(message)
             next_oid = vbs[0].oid
-            if not next_oid.startswith(f"{oid}."):
+            if not next_oid.startswith(f"{base_oid}."):
                 break
             varbinds.append(vbs[0])
         return varbinds
 
     async def set(
-        self, varbinds: List[Tuple[str, Union[int, str, bytes]]]
+        self, varbinds: List[Tuple[str, Union[int, str, bytes, ipaddress.IPv4Address]]]
     ) -> List[SnmpVarbind]:
         for varbind in varbinds:
-            if not isinstance(varbind[1], (int, str, bytes)):
+            if not isinstance(varbind[1], (int, str, bytes, ipaddress.IPv4Address)):
                 raise SnmpUnsupportedValueType(
-                    f"Only int, str and bytes supported, got {type(varbind[1])}"
+                    f"Only int, str, bytes and ip address supported, got {type(varbind[1])}"
                 )
         message = SnmpMessage(
             self.version,
@@ -124,7 +126,7 @@ class Snmp(SnmpConnection):
     ) -> List[SnmpVarbind]:
         nr: int = self.non_repeaters if non_repeaters is None else non_repeaters
         mr: int = self.max_repetitions if max_repetitions is None else max_repetitions
-        base_oid: str = oid
+        base_oid: str = oid if oid.startswith(".") else f".{oid}"
         varbinds: List[SnmpVarbind] = []
         message = SnmpMessage(
             self.version,
