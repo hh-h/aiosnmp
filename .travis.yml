@@ -6,8 +6,6 @@ matrix:
   include:
   - python: '3.6'
     env: EVENT_LOOP=asyncio
-  - python: 3.6-dev
-    env: EVENT_LOOP=asyncio
   - python: '3.7'
     dist: xenial
     env: EVENT_LOOP=asyncio
@@ -17,12 +15,6 @@ matrix:
   - python: nightly
     env: EVENT_LOOP=asyncio
   - python: '3.6'
-    env: EVENT_LOOP=uvloop
-    addons:
-      apt:
-        packages:
-        - libuv-dev
-  - python: 3.6-dev
     env: EVENT_LOOP=uvloop
     addons:
       apt:

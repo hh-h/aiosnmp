@@ -120,7 +120,7 @@ class SnmpProtocol(asyncio.DatagramProtocol):
         )
         self.requests[key] = fut
         for i in range(self.retries):
-            self.transport.sendto(message.encode(), (host, port))
+            self.transport.sendto(message.encode())
             done, _ = await asyncio.wait(
                 {fut}, timeout=self.timeout, return_when=asyncio.ALL_COMPLETED
             )
