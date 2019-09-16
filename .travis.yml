@@ -6,7 +6,9 @@ cache: pip
 matrix:
   include:
   - python: '3.6'
-    env: EVENT_LOOP=asyncio
+    env:
+      - EVENT_LOOP=asyncio
+      - TOXENV=py36-asyncio
   - python: '3.7'
     env: EVENT_LOOP=asyncio
   - python: 3.7-dev
