@@ -1,4 +1,5 @@
 language: python
+dist: xenial
 services:
 - docker
 cache: pip
@@ -6,13 +7,9 @@ matrix:
   include:
   - python: '3.6'
     env: EVENT_LOOP=asyncio
-  - python: 3.6-dev
-    env: EVENT_LOOP=asyncio
   - python: '3.7'
-    dist: xenial
     env: EVENT_LOOP=asyncio
   - python: 3.7-dev
-    dist: xenial
     env: EVENT_LOOP=asyncio
   - python: nightly
     env: EVENT_LOOP=asyncio
@@ -22,22 +19,14 @@ matrix:
       apt:
         packages:
         - libuv-dev
-  - python: 3.6-dev
-    env: EVENT_LOOP=uvloop
-    addons:
-      apt:
-        packages:
-        - libuv-dev
   - python: '3.7'
     env: EVENT_LOOP=uvloop
-    dist: xenial
     addons:
       apt:
         packages:
         - libuv-dev
   - python: 3.7-dev
     env: EVENT_LOOP=uvloop
-    dist: xenial
     addons:
       apt:
         packages:
@@ -59,7 +48,7 @@ matrix:
   - python: nightly
     env: EVENT_LOOP=uvloop
 install:
-- pip install tox-travis tox-docker
+- pip install tox-travis==0.12 tox-docker==1.2.1
 script: tox
 deploy:
   provider: pypi
