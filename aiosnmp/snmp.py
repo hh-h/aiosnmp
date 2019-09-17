@@ -1,7 +1,8 @@
 __all__ = "Snmp"
 
 import ipaddress
-from typing import Any, List, Optional, Tuple, Union
+from types import TracebackType
+from typing import Any, List, Optional, Tuple, Type, Union
 
 from .connection import SnmpConnection
 from .exceptions import SnmpUnsupportedValueType
@@ -33,6 +34,18 @@ class Snmp(SnmpConnection):
         self.community: str = community
         self.non_repeaters: int = non_repeaters
         self.max_repetitions: int = max_repetitions
+
+    def __enter__(self) -> "Snmp":
+        return self
+
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> Optional[bool]:
+        self.close()
+        return None
 
     async def _send(self, message: SnmpMessage) -> List[SnmpVarbind]:
         if self._protocol is None:
