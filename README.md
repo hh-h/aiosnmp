@@ -22,10 +22,9 @@ import asyncio
 import aiosnmp
 
 async def main():
-    snmp = aiosnmp.Snmp(host="127.0.0.1", port=161, community="public")
-
-    for res in await snmp.get(".1.3.6.1.2.1.1.1.0"):
-        print(res.oid, res.value)
+    with aiosnmp.Snmp(host="127.0.0.1", port=161, community="public") as snmp:
+        for res in await snmp.get(".1.3.6.1.2.1.1.1.0"):
+            print(res.oid, res.value)
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(main())
