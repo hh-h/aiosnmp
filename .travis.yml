@@ -48,7 +48,7 @@ matrix:
   - python: nightly
     env: EVENT_LOOP=uvloop
 install:
-- pip install tox-travis tox-docker==1.2.0
+- pip install tox-travis==0.12 tox-docker==1.2.1
 script: tox
 deploy:
   provider: pypi
