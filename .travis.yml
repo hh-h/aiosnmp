@@ -21,6 +21,14 @@ matrix:
       apt:
         packages:
           - libuv-dev
+  - python: '3.7-dev'
+    env: EVENT_LOOP=asyncio
+  - python: '3.7-dev'
+    env: EVENT_LOOP=uvloop
+    addons:
+      apt:
+        packages:
+          - libuv-dev
   - python: '3.8'
     env: EVENT_LOOP=asyncio
   - python: '3.8'
@@ -47,10 +55,6 @@ matrix:
         - libuv-dev
   fast_finish: true
   allow_failures:
-  - python: '3.8-dev'
-    env: EVENT_LOOP=asyncio
-  - python: '3.8-dev'
-    env: EVENT_LOOP=uvloop
   - python: 'nightly'
     env: EVENT_LOOP=asyncio
   - python: 'nightly'
