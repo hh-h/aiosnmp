@@ -7,31 +7,39 @@ matrix:
   include:
   - python: '3.6'
     env: EVENT_LOOP=asyncio
-  - python: '3.7'
-    env: EVENT_LOOP=asyncio
-  - python: 3.7-dev
-    env: EVENT_LOOP=asyncio
-  - python: nightly
-    env: EVENT_LOOP=asyncio
   - python: '3.6'
     env: EVENT_LOOP=uvloop
     addons:
       apt:
         packages:
-        - libuv-dev
+          - libuv-dev
+  - python: '3.7'
+    env: EVENT_LOOP=asyncio
   - python: '3.7'
     env: EVENT_LOOP=uvloop
     addons:
       apt:
         packages:
-        - libuv-dev
-  - python: 3.7-dev
+          - libuv-dev
+  - python: '3.8'
+    env: EVENT_LOOP=asyncio
+  - python: '3.8'
     env: EVENT_LOOP=uvloop
     addons:
       apt:
         packages:
-        - libuv-dev
-  - python: nightly
+          - libuv-dev
+  - python: '3.8-dev'
+    env: EVENT_LOOP=asyncio
+  - python: '3.8-dev'
+    env: EVENT_LOOP=uvloop
+    addons:
+      apt:
+        packages:
+          - libuv-dev
+  - python: 'nightly'
+    env: EVENT_LOOP=asyncio
+  - python: 'nightly'
     env: EVENT_LOOP=uvloop
     addons:
       apt:
@@ -39,13 +47,13 @@ matrix:
         - libuv-dev
   fast_finish: true
   allow_failures:
-  - python: 3.7-dev
+  - python: '3.8-dev'
     env: EVENT_LOOP=asyncio
-  - python: 3.7-dev
+  - python: '3.8-dev'
     env: EVENT_LOOP=uvloop
-  - python: nightly
+  - python: 'nightly'
     env: EVENT_LOOP=asyncio
-  - python: nightly
+  - python: 'nightly'
     env: EVENT_LOOP=uvloop
 install:
 - pip install tox-travis==0.12 tox-docker==1.2.1
@@ -60,4 +68,4 @@ deploy:
   distributions: sdist bdist_wheel
   on:
     branch: master
-    python: '3.6'
+    python: '3.7'
