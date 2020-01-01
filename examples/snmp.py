@@ -4,7 +4,14 @@ import aiosnmp
 
 
 async def main():
-    with aiosnmp.Snmp(host="127.0.0.1", port=161, community="public", timeout=5, retries=3, max_repetitions=10) as snmp:
+    with aiosnmp.Snmp(
+        host="127.0.0.1",
+        port=161,
+        community="public",
+        timeout=5,
+        retries=3,
+        max_repetitions=10,
+    ) as snmp:
         # get
         results = await snmp.get(".1.3.6.1.2.1.1.1.0")
         for res in results:
