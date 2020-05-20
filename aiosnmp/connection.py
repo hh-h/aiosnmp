@@ -3,7 +3,7 @@ __all__ = ("SnmpConnection",)
 import asyncio
 from typing import Optional, cast
 
-from .protocols import SnmpProtocol
+from .protocols import Address, SnmpProtocol
 
 DEFAULT_TIMEOUT = 1
 DEFAULT_RETRIES = 6
@@ -13,6 +13,7 @@ class SnmpConnection:
     __slots__ = (
         "_protocol",
         "_transport",
+        "_peername",
         "host",
         "port",
         "loop",
@@ -33,6 +34,7 @@ class SnmpConnection:
         self.loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
         self._protocol: Optional[SnmpProtocol] = None
         self._transport: Optional[asyncio.DatagramTransport] = None
+        self._peername: Optional[Address] = None
         self.timeout: float = timeout
         self.retries: int = retries
 
@@ -47,6 +49,9 @@ class SnmpConnection:
 
         self._protocol = cast(SnmpProtocol, protocol)
         self._transport = cast(asyncio.DatagramTransport, transport)
+        self._peername = self._transport.get_extra_info(
+            "peername", default=(self.host, self.port)
+        )
 
     def close(self) -> None:
         if self._transport is not None and not self._transport.is_closing():
@@ -54,3 +59,4 @@ class SnmpConnection:
 
         self._protocol = None
         self._transport = None
+        self._peername = None

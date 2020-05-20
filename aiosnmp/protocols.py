@@ -45,6 +45,8 @@ _ERROR_STATUS_TO_EXCEPTION = {
     18: SnmpErrorInconsistentName,
 }
 
+Address = Union[Tuple[str, int], Tuple[str, int, int, int]]
+
 
 class SnmpTrapProtocol(asyncio.DatagramProtocol):
     __slots__ = ("loop", "transport", "communities", "handler")
@@ -57,10 +59,8 @@ class SnmpTrapProtocol(asyncio.DatagramProtocol):
     def connection_made(self, transport: asyncio.BaseTransport) -> None:
         self.transport = cast(asyncio.DatagramTransport, transport)
 
-    def datagram_received(
-        self, data: Union[bytes, Text], addr: Tuple[str, int]
-    ) -> None:
-        host, port = addr
+    def datagram_received(self, data: Union[bytes, Text], addr: Address) -> None:
+        host, port = addr[:2]
 
         if isinstance(data, Text):
             return
@@ -85,10 +85,8 @@ class SnmpProtocol(asyncio.DatagramProtocol):
     def connection_made(self, transport: asyncio.BaseTransport) -> None:
         self.transport = cast(asyncio.DatagramTransport, transport)
 
-    def datagram_received(
-        self, data: Union[bytes, Text], addr: Tuple[str, int]
-    ) -> None:
-        host, port = addr
+    def datagram_received(self, data: Union[bytes, Text], addr: Address) -> None:
+        host, port = addr[:2]
 
         if isinstance(data, Text):
             raise RuntimeError("data should be bytes.")
