@@ -1,4 +1,4 @@
-__all__ = "Snmp"
+__all__ = ("Snmp",)
 
 import ipaddress
 from types import TracebackType
