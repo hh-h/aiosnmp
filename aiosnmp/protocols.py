@@ -99,8 +99,11 @@ class SnmpProtocol(asyncio.DatagramProtocol):
             exception: Optional[Exception] = None
             if isinstance(message.data, PDU) and message.data.error_status != 0:
                 index: int = message.data.error_index
+                oid = None
+                if len(message.data.varbinds) > 0 and index - 1 >= 0:
+                    oid = message.data.varbinds[index - 1].oid
                 exception = _ERROR_STATUS_TO_EXCEPTION[message.data.error_status](
-                    index, message.data.varbinds[index - 1].oid
+                    index, oid
                 )
             try:
                 if exception:
@@ -119,7 +122,7 @@ class SnmpProtocol(asyncio.DatagramProtocol):
             lambda fn: self.requests.pop(key) if key in self.requests else None
         )
         self.requests[key] = fut
-        for i in range(self.retries):
+        for _ in range(self.retries):
             self.transport.sendto(message.encode())
             done, _ = await asyncio.wait(
                 {fut}, timeout=self.timeout, return_when=asyncio.ALL_COMPLETED

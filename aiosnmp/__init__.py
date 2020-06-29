@@ -1,5 +1,5 @@
 __all__ = ("Snmp", "SnmpV2TrapMessage", "SnmpV2TrapServer", "exceptions")
-__version__ = "0.2.2"
+__version__ = "0.2.3"
 __author__ = "Valetov Konstantin"
 
 from .message import SnmpV2TrapMessage

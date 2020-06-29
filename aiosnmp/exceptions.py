@@ -22,6 +22,7 @@ __all__ = (
 )
 
 from asyncio import TimeoutError
+from typing import Optional
 
 
 class SnmpException(Exception):
@@ -39,8 +40,12 @@ class SnmpUnsupportedValueType(SnmpException):
 class SnmpErrorStatus(SnmpException):
     message = ""
 
-    def __init__(self, index: int, oid: str) -> None:
-        super().__init__(f"index: {index}, oid: {oid}, message: {self.message}")
+    def __init__(self, index: int, oid: Optional[str] = None) -> None:
+        if oid is not None:
+            msg = f"index: {index}, oid: {oid}, message: {self.message}"
+        else:
+            msg = f"index: {index}, message: {self.message}"
+        super().__init__(msg)
 
 
 class SnmpErrorTooBig(SnmpErrorStatus):

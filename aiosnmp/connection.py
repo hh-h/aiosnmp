@@ -1,4 +1,4 @@
-__all__ = "SnmpConnection"
+__all__ = ("SnmpConnection",)
 
 import asyncio
 from typing import Optional, cast

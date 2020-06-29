@@ -461,6 +461,8 @@ class Decoder:
             Number.TimeTicks,
             Number.Gauge32,
             Number.Counter32,
+            Number.Counter64,
+            Number.Uinteger32,
         ):
             return self._decode_integer(bytes_data)
         elif nr == Number.OctetString:
