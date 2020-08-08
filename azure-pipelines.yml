@@ -1,0 +1,44 @@
+trigger:
+  - master
+
+pr:
+  - master
+
+pool:
+  vmImage: 'ubuntu-latest'
+strategy:
+  matrix:
+    Check:
+      python.version: '3.8'
+      tox.env: 'check'
+    Python36-asyncio:
+      python.version: '3.6'
+      tox.env: 'py36-asyncio'
+    Python36-uvloop:
+      python.version: '3.6'
+      tox.env: 'py36-uvloop'
+    Python37-asyncio:
+      python.version: '3.7'
+      tox.env: 'py37-asyncio'
+    Python37-uvloop:
+      python.version: '3.7'
+      tox.env: 'py37-uvloop'
+    Python38-asyncio:
+      python.version: '3.8'
+      tox.env: 'py38-asyncio'
+    Python38-uvloop:
+      python.version: '3.8'
+      tox.env: 'py38-uvloop'
+
+steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+    displayName: 'Use Python $(python.version)'
+
+  - script: pip install tox tox-docker==1.2.1
+    displayName: 'Install Tox'
+
+  - script: tox -e $(tox.env)
+    displayName: 'Run Tox'
