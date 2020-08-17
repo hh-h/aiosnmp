@@ -1,6 +1,7 @@
 import asyncio
 from typing import Callable, Dict, List, Optional, Set, Text, Tuple, Union, cast
 
+from .asn1 import Error
 from .exceptions import (
     SnmpErrorAuthorizationError,
     SnmpErrorBadValue,
@@ -22,6 +23,7 @@ from .exceptions import (
     SnmpErrorWrongValue,
     SnmpTimeoutError,
 )
+from .log import logger
 from .message import PDU, SnmpMessage, SnmpResponse, SnmpV2TrapMessage, SnmpVarbind
 
 _ERROR_STATUS_TO_EXCEPTION = {
@@ -63,9 +65,15 @@ class SnmpTrapProtocol(asyncio.DatagramProtocol):
         host, port = addr[:2]
 
         if isinstance(data, Text):
+            logger.error(f"received data from {host}:{port} should be bytes")
             return
 
-        message = SnmpV2TrapMessage.decode(data)
+        try:
+            message = SnmpV2TrapMessage.decode(data)
+        except Error as exc:
+            logger.error(f"could not decode received data from {host}:{port}: {exc}")
+            return
+
         if not message or (
             self.communities and message.community not in self.communities
         ):
@@ -89,8 +97,14 @@ class SnmpProtocol(asyncio.DatagramProtocol):
         host, port = addr[:2]
 
         if isinstance(data, Text):
-            raise RuntimeError("data should be bytes.")
-        message = SnmpResponse.decode(data)
+            logger.error(f"received data from {host}:{port} should be bytes")
+            return
+
+        try:
+            message = SnmpResponse.decode(data)
+        except Error as exc:
+            logger.error(f"could not decode received data from {host}:{port}: {exc}")
+            return
 
         key = (host, port, message.data.request_id)
         if key in self.requests:
