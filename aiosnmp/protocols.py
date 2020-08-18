@@ -65,13 +65,13 @@ class SnmpTrapProtocol(asyncio.DatagramProtocol):
         host, port = addr[:2]
 
         if isinstance(data, Text):
-            logger.error(f"received data from {host}:{port} should be bytes")
+            logger.warning(f"received data from {host}:{port} should be bytes")
             return
 
         try:
             message = SnmpV2TrapMessage.decode(data)
         except Error as exc:
-            logger.error(f"could not decode received data from {host}:{port}: {exc}")
+            logger.warning(f"could not decode received data from {host}:{port}: {exc}")
             return
 
         if not message or (
@@ -97,13 +97,13 @@ class SnmpProtocol(asyncio.DatagramProtocol):
         host, port = addr[:2]
 
         if isinstance(data, Text):
-            logger.error(f"received data from {host}:{port} should be bytes")
+            logger.warning(f"received data from {host}:{port} should be bytes")
             return
 
         try:
             message = SnmpResponse.decode(data)
         except Error as exc:
-            logger.error(f"could not decode received data from {host}:{port}: {exc}")
+            logger.warning(f"could not decode received data from {host}:{port}: {exc}")
             return
 
         key = (host, port, message.data.request_id)
