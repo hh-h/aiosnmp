@@ -16,7 +16,6 @@ services:
 
 jobs:
   - job: check
-
     pool:
       vmImage: 'ubuntu-latest'
 
@@ -42,7 +41,6 @@ jobs:
         displayName: 'Run mypy'
 
   - job: tests
-
     pool:
       vmImage: 'ubuntu-latest'
 
