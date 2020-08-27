@@ -11,9 +11,6 @@ resources:
     ports:
       - 161:161/udp
 
-services:
-  snmp: snmp
-
 jobs:
   - job: check
     pool:
@@ -86,3 +83,6 @@ jobs:
 
       - script: bash <(curl -s https://codecov.io/bash)
         displayName: 'Upload to codecov.io'
+
+    services:
+      snmp: snmp
