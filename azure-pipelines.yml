@@ -8,6 +8,8 @@ resources:
   containers:
   - container: snmp
     image: koshh/aiosnmp:latest
+    ports:
+      - 161/udp
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -45,6 +47,9 @@ steps:
       versionSpec: '$(python.version)'
       architecture: 'x64'
     displayName: 'Use Python $(python.version)'
+
+  - script: docker ps
+    displayName: 'Docker PS'
 
   - script: pip install pytest-xdist pytest-asyncio pytest-cov uvloop codecov
     displayName: 'Install Dependencies'
