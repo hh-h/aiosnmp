@@ -59,3 +59,6 @@ steps:
 
   - script: pytest -n 1 --durations=5 --cov=aiosnmp --cov-report=term-missing --event-loop=$(loop)
     displayName: 'Run Tests'
+
+  - script: bash <(curl -s https://codecov.io/bash)
+    displayName: 'Upload to codecov.io'
