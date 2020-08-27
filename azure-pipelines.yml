@@ -4,31 +4,40 @@ trigger:
 pr:
   - master
 
+resources:
+  containers:
+  - container: snmp
+    image: koshh/aiosnmp:latest
+
 pool:
   vmImage: 'ubuntu-latest'
+
+services:
+  snmp: snmp
+
 strategy:
   matrix:
-    Check:
-      python.version: '3.8'
-      tox.env: 'check'
+#    Check:
+#      python.version: '3.8'
+#      tox.env: 'check'
     Python36-asyncio:
       python.version: '3.6'
-      tox.env: 'py36-asyncio'
+      loop: 'asyncio'
     Python36-uvloop:
       python.version: '3.6'
-      tox.env: 'py36-uvloop'
+      loop: 'uvloop'
     Python37-asyncio:
       python.version: '3.7'
-      tox.env: 'py37-asyncio'
+      loop: 'asyncio'
     Python37-uvloop:
       python.version: '3.7'
-      tox.env: 'py37-uvloop'
+      loop: 'uvloop'
     Python38-asyncio:
       python.version: '3.8'
-      tox.env: 'py38-asyncio'
+      loop: 'asyncio'
     Python38-uvloop:
       python.version: '3.8'
-      tox.env: 'py38-uvloop'
+      loop: 'uvloop'
 
 steps:
   - task: UsePythonVersion@0
@@ -37,8 +46,8 @@ steps:
       architecture: 'x64'
     displayName: 'Use Python $(python.version)'
 
-  - script: pip install tox tox-docker==1.2.1
-    displayName: 'Install Tox'
+  - script: pip install pytest-xdist pytest-asyncio pytest-cov uvloop codecov
+    displayName: 'Install Dependencies'
 
-  - script: tox -e $(tox.env)
-    displayName: 'Run Tox'
+  - script: pytest -n 1 --durations=5 --cov=aiosnmp --cov-report=term-missing --event-loop=${loop}
+    displayName: 'Run Tests'
