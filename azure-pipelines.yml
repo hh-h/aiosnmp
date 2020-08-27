@@ -43,6 +43,9 @@ jobs:
 
   - job: tests
 
+    pool:
+      vmImage: 'ubuntu-latest'
+
     strategy:
       matrix:
         Python36-asyncio:
@@ -63,9 +66,6 @@ jobs:
         Python38-uvloop:
           python.version: '3.8'
           loop: 'uvloop'
-
-    pool:
-      vmImage: 'ubuntu-latest'
 
     steps:
       - task: UsePythonVersion@0
