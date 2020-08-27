@@ -49,5 +49,5 @@ steps:
   - script: pip install pytest-xdist pytest-asyncio pytest-cov uvloop codecov
     displayName: 'Install Dependencies'
 
-  - script: pytest -n 1 --durations=5 --cov=aiosnmp --cov-report=term-missing --event-loop=${loop}
+  - script: pytest -n 1 --durations=5 --cov=aiosnmp --cov-report=term-missing --event-loop=$(loop)
     displayName: 'Run Tests'
