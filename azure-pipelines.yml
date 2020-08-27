@@ -11,54 +11,80 @@ resources:
     ports:
       - 161:161/udp
 
-pool:
-  vmImage: 'ubuntu-latest'
-
 services:
   snmp: snmp
 
-strategy:
-  matrix:
-#    Check:
-#      python.version: '3.8'
-#      tox.env: 'check'
-    Python36-asyncio:
-      python.version: '3.6'
-      loop: 'asyncio'
-    Python36-uvloop:
-      python.version: '3.6'
-      loop: 'uvloop'
-    Python37-asyncio:
-      python.version: '3.7'
-      loop: 'asyncio'
-    Python37-uvloop:
-      python.version: '3.7'
-      loop: 'uvloop'
-    Python38-asyncio:
-      python.version: '3.8'
-      loop: 'asyncio'
-    Python38-uvloop:
-      python.version: '3.8'
-      loop: 'uvloop'
+jobs:
+  - job: check
 
-steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '$(python.version)'
-      architecture: 'x64'
-    displayName: 'Use Python $(python.version)'
+    pool:
+      vmImage: 'ubuntu-latest'
 
-  - script: docker ps
-    displayName: 'Docker PS'
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '3.8'
+          architecture: 'x64'
 
-  - script: env
-    displayName: 'Env'
+      - script: pip install mypy isort flake8 black
+        displayName: 'Install Dependencies'
 
-  - script: pip install pytest-xdist pytest-asyncio pytest-cov uvloop codecov
-    displayName: 'Install Dependencies'
+      - script: flake8 aiosnmp tests examples
+        displayName: 'Run flake8'
 
-  - script: pytest -n 1 --durations=5 --cov=aiosnmp --cov-report=term-missing --event-loop=$(loop)
-    displayName: 'Run Tests'
+      - script: isort -q --check --diff aiosnmp tests examples
+        displayName: 'Run isort'
 
-  - script: bash <(curl -s https://codecov.io/bash)
-    displayName: 'Upload to codecov.io'
+      - script: black -q --check --diff aiosnmp tests examples
+        displayName: 'Run black'
+
+      - script: mypy aiosnmp
+        displayName: 'Run mypy'
+
+  - job: tests
+
+    strategy:
+      matrix:
+        Python36-asyncio:
+          python.version: '3.6'
+          loop: 'asyncio'
+        Python36-uvloop:
+          python.version: '3.6'
+          loop: 'uvloop'
+        Python37-asyncio:
+          python.version: '3.7'
+          loop: 'asyncio'
+        Python37-uvloop:
+          python.version: '3.7'
+          loop: 'uvloop'
+        Python38-asyncio:
+          python.version: '3.8'
+          loop: 'asyncio'
+        Python38-uvloop:
+          python.version: '3.8'
+          loop: 'uvloop'
+
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '$(python.version)'
+          architecture: 'x64'
+        displayName: 'Use Python $(python.version)'
+
+      - script: docker ps
+        displayName: 'Docker PS'
+
+      - script: env
+        displayName: 'Env'
+
+      - script: pip install pytest-xdist pytest-asyncio pytest-cov uvloop codecov
+        displayName: 'Install Dependencies'
+
+      - script: pytest -n 1 --durations=5 --cov=aiosnmp --cov-report=term-missing --event-loop=$(loop)
+        displayName: 'Run Tests'
+
+      - script: bash <(curl -s https://codecov.io/bash)
+        displayName: 'Upload to codecov.io'
