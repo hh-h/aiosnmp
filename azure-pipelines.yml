@@ -106,7 +106,7 @@ jobs:
       - task: TwineAuthenticate@1
         displayName: 'Twine Authenticate'
         inputs:
-          artifactFeed: aiosnmp
+          pythonUploadServiceConnection: uploadToPypi
 
-      - script: python -m twine upload -r aiosnmp --config-file $(PYPIRC_PATH) dist/*
+      - script: python -m twine upload -r uploadToPypi/pypi --config-file $(PYPIRC_PATH) dist/*
         displayName: 'Upload'
