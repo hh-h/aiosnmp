@@ -108,5 +108,5 @@ jobs:
         inputs:
           pythonUploadServiceConnection: uploadToPypi
 
-      - script: python -m twine upload -r uploadToPypi/pypi --config-file $(PYPIRC_PATH) dist/*
+      - script: python -m twine upload -r uploadToPypi --config-file $(PYPIRC_PATH) dist/*
         displayName: 'Upload'
