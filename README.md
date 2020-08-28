@@ -1,5 +1,5 @@
 # aiosnmp
-[![Build Status](https://travis-ci.com/hh-h/aiosnmp.svg?branch=master)](https://travis-ci.com/hh-h/aiosnmp)
+[![Build Status](https://dev.azure.com/6660879/aiosnmp/_apis/build/status/hh-h.aiosnmp?branchName=master)](https://dev.azure.com/6660879/aiosnmp/_build/results?buildId=38&view=results)
 [![Code Coverage](https://img.shields.io/codecov/c/github/hh-h/aiosnmp/master.svg?style=flat)](https://codecov.io/github/hh-h/aiosnmp?branch=master)
 [![PyPI version](https://badge.fury.io/py/aiosnmp.svg)](https://badge.fury.io/py/aiosnmp)
 [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://img.shields.io/badge/license-MIT-brightgreen.svg)
