@@ -4,41 +4,114 @@ trigger:
 pr:
   - master
 
-pool:
-  vmImage: 'ubuntu-latest'
-strategy:
-  matrix:
-    Check:
-      python.version: '3.8'
-      tox.env: 'check'
-    Python36-asyncio:
-      python.version: '3.6'
-      tox.env: 'py36-asyncio'
-    Python36-uvloop:
-      python.version: '3.6'
-      tox.env: 'py36-uvloop'
-    Python37-asyncio:
-      python.version: '3.7'
-      tox.env: 'py37-asyncio'
-    Python37-uvloop:
-      python.version: '3.7'
-      tox.env: 'py37-uvloop'
-    Python38-asyncio:
-      python.version: '3.8'
-      tox.env: 'py38-asyncio'
-    Python38-uvloop:
-      python.version: '3.8'
-      tox.env: 'py38-uvloop'
+resources:
+  containers:
+  - container: snmp
+    image: koshh/aiosnmp:latest
+    ports:
+      - 161:161/udp
 
-steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '$(python.version)'
-      architecture: 'x64'
-    displayName: 'Use Python $(python.version)'
+jobs:
+  - job: check
+    pool:
+      vmImage: 'ubuntu-latest'
 
-  - script: pip install tox tox-docker==1.2.1
-    displayName: 'Install Tox'
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '3.8'
+          architecture: 'x64'
 
-  - script: tox -e $(tox.env)
-    displayName: 'Run Tox'
+      - script: pip install mypy isort flake8 black
+        displayName: 'Install Dependencies'
+
+      - script: flake8 aiosnmp tests examples
+        displayName: 'Run flake8'
+
+      - script: isort -q --check --diff aiosnmp tests examples
+        displayName: 'Run isort'
+
+      - script: black -q --check --diff aiosnmp tests examples
+        displayName: 'Run black'
+
+      - script: mypy aiosnmp
+        displayName: 'Run mypy'
+
+  - job: tests
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    strategy:
+      matrix:
+        Python36-asyncio:
+          python.version: '3.6'
+          loop: 'asyncio'
+        Python36-uvloop:
+          python.version: '3.6'
+          loop: 'uvloop'
+        Python37-asyncio:
+          python.version: '3.7'
+          loop: 'asyncio'
+        Python37-uvloop:
+          python.version: '3.7'
+          loop: 'uvloop'
+        Python38-asyncio:
+          python.version: '3.8'
+          loop: 'asyncio'
+        Python38-uvloop:
+          python.version: '3.8'
+          loop: 'uvloop'
+
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '$(python.version)'
+          architecture: 'x64'
+        displayName: 'Use Python $(python.version)'
+
+      - script: docker ps
+        displayName: 'Docker PS'
+
+      - script: env
+        displayName: 'Env'
+
+      - script: pip install pytest-xdist pytest-asyncio pytest-cov uvloop codecov
+        displayName: 'Install Dependencies'
+
+      - script: pytest -n 1 --durations=5 --cov=aiosnmp --cov-report=term-missing --event-loop=$(loop)
+        displayName: 'Run Tests'
+
+      - script: bash <(curl -s https://codecov.io/bash)
+        displayName: 'Upload to codecov.io'
+
+    services:
+      snmp: snmp
+
+  - job: twine
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    dependsOn:
+      - check
+      - tests
+    condition: and(succeeded(), startsWith(variables['build.sourceBranch'], 'refs/tags/'))
+
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '3.8'
+          architecture: 'x64'
+
+      - script: pip install wheel twine
+        displayName: 'Install Dependencies'
+
+      - script: python setup.py bdist_wheel
+        displayName: 'Build'
+
+      - task: TwineAuthenticate@1
+        displayName: 'Twine Authenticate'
+        inputs:
+          pythonUploadServiceConnection: uploadToPypi
+
+      - script: python -m twine upload -r uploadToPypi --config-file $(PYPIRC_PATH) dist/*
+        displayName: 'Upload'
