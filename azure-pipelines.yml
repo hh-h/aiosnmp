@@ -91,7 +91,8 @@ jobs:
     pool:
       vmImage: 'ubuntu-latest'
 
-    condition: startsWith(variables['build.sourceBranch'], 'refs/tags/')
+    dependsOn: check, tests
+    condition: and(succeeded(), startsWith(variables['build.sourceBranch'], 'refs/tags/'))
 
     steps:
       - task: UsePythonVersion@0
@@ -110,5 +111,5 @@ jobs:
         inputs:
           pythonUploadServiceConnection: uploadToPypi
 
-      - script: python -m twine upload --skip-existing -r uploadToPypi --config-file $(PYPIRC_PATH) dist/*
+      - script: python -m twine upload -r uploadToPypi --config-file $(PYPIRC_PATH) dist/*
         displayName: 'Upload'
