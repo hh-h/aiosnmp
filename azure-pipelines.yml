@@ -41,6 +41,8 @@ jobs:
     pool:
       vmImage: 'ubuntu-latest'
 
+    condition: succeeded()
+
     strategy:
       matrix:
         Python36-asyncio:
