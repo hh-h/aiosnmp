@@ -91,7 +91,9 @@ jobs:
     pool:
       vmImage: 'ubuntu-latest'
 
-    dependsOn: check, tests
+    dependsOn:
+      - check
+      - tests
     condition: and(succeeded(), startsWith(variables['build.sourceBranch'], 'refs/tags/'))
 
     steps:
