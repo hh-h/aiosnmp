@@ -28,4 +28,6 @@ def pytest_generate_tests(metafunc):
     if "host" in metafunc.fixturenames:
         metafunc.parametrize("host", ["127.0.0.1", "localhost", "::1"])
     if "port" in metafunc.fixturenames:
-        metafunc.parametrize("port", [int(os.environ.get("KOSHH/AIOSNMP_161_UDP", 161))])
+        metafunc.parametrize(
+            "port", [int(os.environ.get("KOSHH/AIOSNMP_161_UDP", 161))]
+        )
