@@ -1,6 +1,5 @@
 import asyncio
 import os
-import pathlib
 
 try:
     import uvloop

@@ -41,8 +41,6 @@ jobs:
     pool:
       vmImage: 'ubuntu-latest'
 
-    condition: succeeded()
-
     strategy:
       matrix:
         Python36-asyncio:
@@ -88,3 +86,27 @@ jobs:
 
     services:
       snmp: snmp
+
+  - job: twine
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '3.8'
+          architecture: 'x64'
+
+      - script: pip install wheel twine
+        displayName: 'Install Dependencies'
+
+      - script: python setup.py bdist_wheel
+        displayName: 'Build'
+
+      - task: TwineAuthenticate@1
+        displayName: 'Twine Authenticate'
+        inputs:
+          artifactFeed: 6660879/aiosnmp
+
+      - script: python -m twine upload -r aiosnmp --config-file $(PYPIRC_PATH) dist/*
+        displayName: 'Upload'
