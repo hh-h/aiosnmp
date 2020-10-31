@@ -125,6 +125,10 @@ class SnmpProtocol(asyncio.DatagramProtocol):
             except asyncio.InvalidStateError:
                 del self.requests[key]
 
+    @property
+    def is_connected(self) -> bool:
+        return bool(self.transport is not None and not self.transport.is_closing())
+
     async def _send(
         self, message: SnmpMessage, host: str, port: int
     ) -> List[SnmpVarbind]:

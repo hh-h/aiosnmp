@@ -1,6 +1,7 @@
 __all__ = ("Snmp",)
 
 import ipaddress
+import warnings
 from types import TracebackType
 from typing import Any, List, Optional, Tuple, Type, Union
 
@@ -36,6 +37,7 @@ class Snmp(SnmpConnection):
         self.max_repetitions: int = max_repetitions
 
     def __enter__(self) -> "Snmp":
+        warnings.warn("Use async with, this is deprecated", FutureWarning)
         return self
 
     def __exit__(
@@ -47,10 +49,28 @@ class Snmp(SnmpConnection):
         self.close()
         return None
 
-    async def _send(self, message: SnmpMessage) -> List[SnmpVarbind]:
-        if self._protocol is None:
+    async def __aenter__(self) -> "Snmp":
+        if not self.is_connected:
             await self._connect()
-        assert self._protocol
+
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> Optional[bool]:
+        self.close()
+        return None
+
+    async def _send(self, message: SnmpMessage) -> List[SnmpVarbind]:
+        if not self._closed and self._protocol is None:
+            await self._connect()
+
+        if self._protocol is None:
+            raise Exception("Connection is closed")
+
         assert self._peername
         return await self._protocol._send(message, *self._peername[:2])
 

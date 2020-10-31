@@ -14,7 +14,8 @@ pip install aiosnmp
 ```
 
 ## Notice
-Only snmp v2c supported, no v3 support
+Only snmp v2c supported, v3 version is not supported  
+Oids should be like `.1.3.6...` or `1.3.6...`. `iso.3.6...` is not supported
 
 ## Basic Usage
 ```python
@@ -22,12 +23,11 @@ import asyncio
 import aiosnmp
 
 async def main():
-    with aiosnmp.Snmp(host="127.0.0.1", port=161, community="public") as snmp:
+    async with aiosnmp.Snmp(host="127.0.0.1", port=161, community="public") as snmp:
         for res in await snmp.get(".1.3.6.1.2.1.1.1.0"):
             print(res.oid, res.value)
 
-loop = asyncio.get_event_loop()
-loop.run_until_complete(main())
+asyncio.run(main())
 ```
 
 more in [**/examples**](https://github.com/hh-h/aiosnmp/tree/master/examples)
@@ -39,3 +39,9 @@ more in [**/examples**](https://github.com/hh-h/aiosnmp/tree/master/examples)
 
 ## License
 aiosnmp is developed and distributed under the MIT license.
+
+## Run local tests
+```shell
+pip install -r requirements-dev.txt
+tox
+```
