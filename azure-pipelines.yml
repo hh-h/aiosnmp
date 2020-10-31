@@ -20,7 +20,7 @@ jobs:
     steps:
       - task: UsePythonVersion@0
         inputs:
-          versionSpec: '3.8'
+          versionSpec: '3.9'
           architecture: 'x64'
 
       - script: pip install mypy isort flake8 black
@@ -62,6 +62,12 @@ jobs:
         Python38-uvloop:
           python.version: '3.8'
           loop: 'uvloop'
+        Python39-asyncio:
+          python.version: '3.9'
+          loop: 'asyncio'
+        Python39-uvloop:
+          python.version: '3.9'
+          loop: 'uvloop'
 
     steps:
       - task: UsePythonVersion@0
@@ -100,7 +106,7 @@ jobs:
     steps:
       - task: UsePythonVersion@0
         inputs:
-          versionSpec: '3.8'
+          versionSpec: '3.9'
           architecture: 'x64'
 
       - script: pip install wheel twine
