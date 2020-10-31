@@ -49,10 +49,7 @@ class SnmpErrorStatus(SnmpException):
 
 
 class SnmpErrorTooBig(SnmpErrorStatus):
-    message = (
-        "The agent could not place the results "
-        "of the requested SNMP operation in a single SNMP message."
-    )
+    message = "The agent could not place the results " "of the requested SNMP operation in a single SNMP message."
 
 
 class SnmpErrorNoSuchName(SnmpErrorStatus):
@@ -61,8 +58,7 @@ class SnmpErrorNoSuchName(SnmpErrorStatus):
 
 class SnmpErrorBadValue(SnmpErrorStatus):
     message = (
-        "The requested SNMP operation tried to change a variable "
-        "but it specified either a syntax or value error."
+        "The requested SNMP operation tried to change a variable " "but it specified either a syntax or value error."
     )
 
 
@@ -75,10 +71,7 @@ class SnmpErrorReadOnly(SnmpErrorStatus):
 
 
 class SnmpErrorGenErr(SnmpErrorStatus):
-    message = (
-        "An error other than one of those listed here "
-        "occurred during the requested SNMP operation."
-    )
+    message = "An error other than one of those listed here " "occurred during the requested SNMP operation."
 
 
 class SnmpErrorNoAccess(SnmpErrorStatus):
@@ -86,17 +79,11 @@ class SnmpErrorNoAccess(SnmpErrorStatus):
 
 
 class SnmpErrorWrongType(SnmpErrorStatus):
-    message = (
-        "The value specifies a type that is inconsistent "
-        "with the type required for the variable."
-    )
+    message = "The value specifies a type that is inconsistent " "with the type required for the variable."
 
 
 class SnmpErrorWrongLength(SnmpErrorStatus):
-    message = (
-        "The value specifies a length that is inconsistent "
-        "with the length required for the variable."
-    )
+    message = "The value specifies a length that is inconsistent " "with the length required for the variable."
 
 
 class SnmpErrorWrongEncoding(SnmpErrorStatus):
@@ -119,10 +106,7 @@ class SnmpErrorInconsistentValue(SnmpErrorStatus):
 
 
 class SnmpErrorResourceUnavailable(SnmpErrorStatus):
-    message = (
-        "Assigning the value to the variable requires allocation of resources "
-        "that are currently unavailable."
-    )
+    message = "Assigning the value to the variable requires allocation of resources " "that are currently unavailable."
 
 
 class SnmpErrorCommitFailed(SnmpErrorStatus):

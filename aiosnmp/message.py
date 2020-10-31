@@ -85,9 +85,7 @@ class BulkPDU:
 
     _PDUType: PDUType
 
-    def __init__(
-        self, varbinds: List[SnmpVarbind], non_repeaters: int, max_repetitions: int
-    ) -> None:
+    def __init__(self, varbinds: List[SnmpVarbind], non_repeaters: int, max_repetitions: int) -> None:
         self.request_id = random.randrange(1, 2_147_483_647)
         self.non_repeaters: int = non_repeaters
         self.max_repetitions: int = max_repetitions

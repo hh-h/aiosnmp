@@ -26,9 +26,7 @@ from aiosnmp import Snmp
         ([".1.3.6.1.4.1.8072.2.255.6.0"], 42),
     ),
 )
-async def test_snmp_types(
-    host: str, port: int, oid: Union[str, List[str]], value: Any
-) -> None:
+async def test_snmp_types(host: str, port: int, oid: Union[str, List[str]], value: Any) -> None:
     async with Snmp(host=host, port=port) as snmp:
         results = await snmp.get(oid)
         assert len(results) == 1
@@ -59,9 +57,7 @@ async def test_snmp_get_bulk(host: str, port: int, max_repetitions: int) -> None
 @pytest.mark.asyncio
 @pytest.mark.parametrize("max_repetitions", (1, 2, 5, 10, 25))
 async def test_snmp_bulk_walk(host: str, port: int, max_repetitions: int) -> None:
-    async with Snmp(
-        host=host, port=port, timeout=3, max_repetitions=max_repetitions
-    ) as snmp:
+    async with Snmp(host=host, port=port, timeout=3, max_repetitions=max_repetitions) as snmp:
         results = await snmp.bulk_walk(".1.3.6.1.2.1.1.9")
         assert len(results) == 30
         for res in results:
@@ -105,9 +101,7 @@ async def test_snmp_bulk_walk_end_of_mibs_from_the_start(host: str, port: int) -
 
 
 @pytest.mark.asyncio
-async def test_snmp_bulk_walk_end_of_mibs_after_some_requests(
-    host: str, port: int
-) -> None:
+async def test_snmp_bulk_walk_end_of_mibs_after_some_requests(host: str, port: int) -> None:
     async with Snmp(host=host, port=port, max_repetitions=15) as snmp:
         results = await snmp.bulk_walk(".1.3.6.1.6.3.16.1.5.2.1")
         assert len(results) == 24
@@ -136,9 +130,7 @@ async def test_snmp_non_existing_oid(host: str, port: int) -> None:
     ),
 )
 @pytest.mark.asyncio
-async def test_snmp_multiple_oids(
-    host: str, port: int, oids: List[str], values: List[Any]
-) -> None:
+async def test_snmp_multiple_oids(host: str, port: int, oids: List[str], values: List[Any]) -> None:
     async with Snmp(host=host, port=port) as snmp:
         results = await snmp.get(oids)
         assert len(results) == len(oids)
@@ -165,19 +157,13 @@ async def test_snmp_multiple_oids(
         ],
     ),
 )
-async def test_snmp_set(
-    host: str, port: int, varbinds: List[Tuple[str, Union[int, str, bytes]]]
-) -> None:
+async def test_snmp_set(host: str, port: int, varbinds: List[Tuple[str, Union[int, str, bytes]]]) -> None:
     async with Snmp(host=host, port=port, timeout=3, community="private") as snmp:
         results = await snmp.set(varbinds)
         assert len(results) == len(varbinds)
         for varbind, res in zip(varbinds, results):
             assert res.oid == varbind[0]
-            assert (
-                res.value == varbind[1]
-                if not isinstance(varbind[1], str)
-                else varbind[1].encode()
-            )
+            assert res.value == varbind[1] if not isinstance(varbind[1], str) else varbind[1].encode()
 
 
 @pytest.mark.asyncio
@@ -208,9 +194,7 @@ async def test_snmp_get_next_no_leading_dot(host: str, port: int) -> None:
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("max_repetitions", (1, 2, 5, 10, 25))
-async def test_snmp_get_bulk_no_leading_dot(
-    host: str, port: int, max_repetitions: int
-) -> None:
+async def test_snmp_get_bulk_no_leading_dot(host: str, port: int, max_repetitions: int) -> None:
     async with Snmp(host=host, port=port, max_repetitions=max_repetitions) as snmp:
         results = await snmp.get_bulk("1.3.6.1.2.1.1")
         assert len(results) == max_repetitions
@@ -220,12 +204,8 @@ async def test_snmp_get_bulk_no_leading_dot(
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("max_repetitions", (1, 2, 5, 10, 25))
-async def test_snmp_bulk_walk_no_leading_dot(
-    host: str, port: int, max_repetitions: int
-) -> None:
-    async with Snmp(
-        host=host, port=port, timeout=3, max_repetitions=max_repetitions
-    ) as snmp:
+async def test_snmp_bulk_walk_no_leading_dot(host: str, port: int, max_repetitions: int) -> None:
+    async with Snmp(host=host, port=port, timeout=3, max_repetitions=max_repetitions) as snmp:
         results = await snmp.bulk_walk("1.3.6.1.2.1.1.9")
         assert len(results) == 30
         for res in results:

@@ -7,15 +7,7 @@ from typing import Any, List, Optional, Tuple, Type, Union
 
 from .connection import SnmpConnection
 from .exceptions import SnmpUnsupportedValueType
-from .message import (
-    GetBulkRequest,
-    GetNextRequest,
-    GetRequest,
-    SetRequest,
-    SnmpMessage,
-    SnmpVarbind,
-    SnmpVersion,
-)
+from .message import GetBulkRequest, GetNextRequest, GetRequest, SetRequest, SnmpMessage, SnmpVarbind, SnmpVersion
 
 
 class Snmp(SnmpConnection):
@@ -77,9 +69,7 @@ class Snmp(SnmpConnection):
     async def get(self, oids: Union[str, List[str]]) -> List[SnmpVarbind]:
         if isinstance(oids, str):
             oids = [oids]
-        message = SnmpMessage(
-            self.version, self.community, GetRequest([SnmpVarbind(oid) for oid in oids])
-        )
+        message = SnmpMessage(self.version, self.community, GetRequest([SnmpVarbind(oid) for oid in oids]))
         return await self._send(message)
 
     async def get_next(self, oids: Union[str, List[str]]) -> List[SnmpVarbind]:
@@ -112,23 +102,17 @@ class Snmp(SnmpConnection):
 
     async def walk(self, oid: str) -> List[SnmpVarbind]:
         varbinds: List[SnmpVarbind] = []
-        message = SnmpMessage(
-            self.version, self.community, GetNextRequest([SnmpVarbind(oid)])
-        )
+        message = SnmpMessage(self.version, self.community, GetNextRequest([SnmpVarbind(oid)]))
         base_oid = oid if oid.startswith(".") else f".{oid}"
         vbs = await self._send(message)
         next_oid = vbs[0].oid
         if not next_oid.startswith(f"{base_oid}."):
-            message = SnmpMessage(
-                self.version, self.community, GetRequest([SnmpVarbind(base_oid)])
-            )
+            message = SnmpMessage(self.version, self.community, GetRequest([SnmpVarbind(base_oid)]))
             return await self._send(message)
 
         varbinds.append(vbs[0])
         while True:
-            message = SnmpMessage(
-                self.version, self.community, GetNextRequest([SnmpVarbind(next_oid)])
-            )
+            message = SnmpMessage(self.version, self.community, GetNextRequest([SnmpVarbind(next_oid)]))
             vbs = await self._send(message)
             next_oid = vbs[0].oid
             if not next_oid.startswith(f"{base_oid}."):
@@ -136,14 +120,10 @@ class Snmp(SnmpConnection):
             varbinds.append(vbs[0])
         return varbinds
 
-    async def set(
-        self, varbinds: List[Tuple[str, Union[int, str, bytes, ipaddress.IPv4Address]]]
-    ) -> List[SnmpVarbind]:
+    async def set(self, varbinds: List[Tuple[str, Union[int, str, bytes, ipaddress.IPv4Address]]]) -> List[SnmpVarbind]:
         for varbind in varbinds:
             if not isinstance(varbind[1], (int, str, bytes, ipaddress.IPv4Address)):
-                raise SnmpUnsupportedValueType(
-                    f"Only int, str, bytes and ip address supported, got {type(varbind[1])}"
-                )
+                raise SnmpUnsupportedValueType(f"Only int, str, bytes and ip address supported, got {type(varbind[1])}")
         message = SnmpMessage(
             self.version,
             self.community,

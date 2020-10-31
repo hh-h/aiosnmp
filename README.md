@@ -45,3 +45,9 @@ aiosnmp is developed and distributed under the MIT license.
 pip install -r requirements-dev.txt
 tox
 ```
+
+## Before submitting PR
+```shell
+pip install -r requirements-dev.txt
+tox -e format
+```
