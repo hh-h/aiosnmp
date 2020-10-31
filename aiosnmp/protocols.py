@@ -74,9 +74,7 @@ class SnmpTrapProtocol(asyncio.DatagramProtocol):
             logger.warning(f"could not decode received data from {host}:{port}: {exc}")
             return
 
-        if not message or (
-            self.communities and message.community not in self.communities
-        ):
+        if not message or (self.communities and message.community not in self.communities):
             return
         asyncio.ensure_future(self.handler(host, port, message))
 
@@ -114,9 +112,7 @@ class SnmpProtocol(asyncio.DatagramProtocol):
                 oid = None
                 if len(message.data.varbinds) > 0 and index - 1 >= 0:
                     oid = message.data.varbinds[index - 1].oid
-                exception = _ERROR_STATUS_TO_EXCEPTION[message.data.error_status](
-                    index, oid
-                )
+                exception = _ERROR_STATUS_TO_EXCEPTION[message.data.error_status](index, oid)
             try:
                 if exception:
                     self.requests[key].set_exception(exception)
@@ -129,20 +125,14 @@ class SnmpProtocol(asyncio.DatagramProtocol):
     def is_connected(self) -> bool:
         return bool(self.transport is not None and not self.transport.is_closing())
 
-    async def _send(
-        self, message: SnmpMessage, host: str, port: int
-    ) -> List[SnmpVarbind]:
+    async def _send(self, message: SnmpMessage, host: str, port: int) -> List[SnmpVarbind]:
         key = (host, port, message.data.request_id)
         fut: asyncio.Future = self.loop.create_future()
-        fut.add_done_callback(
-            lambda fn: self.requests.pop(key) if key in self.requests else None
-        )
+        fut.add_done_callback(lambda fn: self.requests.pop(key) if key in self.requests else None)
         self.requests[key] = fut
         for _ in range(self.retries):
             self.transport.sendto(message.encode())
-            done, _ = await asyncio.wait(
-                {fut}, timeout=self.timeout, return_when=asyncio.ALL_COMPLETED
-            )
+            done, _ = await asyncio.wait({fut}, timeout=self.timeout, return_when=asyncio.ALL_COMPLETED)
             if not done:
                 continue
             r: List[SnmpVarbind] = fut.result()

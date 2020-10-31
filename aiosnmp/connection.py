@@ -45,15 +45,11 @@ class SnmpConnection:
             lambda: SnmpProtocol(self.timeout, self.retries),
             remote_addr=(self.host, self.port),
         )
-        transport, protocol = await asyncio.wait_for(
-            connect_future, timeout=self.timeout
-        )
+        transport, protocol = await asyncio.wait_for(connect_future, timeout=self.timeout)
 
         self._protocol = cast(SnmpProtocol, protocol)
         self._transport = cast(asyncio.DatagramTransport, transport)
-        self._peername = self._transport.get_extra_info(
-            "peername", default=(self.host, self.port)
-        )
+        self._peername = self._transport.get_extra_info("peername", default=(self.host, self.port))
 
     @property
     def is_closed(self) -> bool:

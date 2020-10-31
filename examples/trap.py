@@ -10,9 +10,7 @@ async def handler(host: str, port: int, message: aiosnmp.SnmpV2TrapMessage) -> N
 
 
 async def main():
-    p = aiosnmp.SnmpV2TrapServer(
-        host="127.0.0.1", port=162, communities=("public",), handler=handler
-    )
+    p = aiosnmp.SnmpV2TrapServer(host="127.0.0.1", port=162, communities=("public",), handler=handler)
     await p.run()
 
 

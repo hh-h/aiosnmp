@@ -29,10 +29,7 @@ class TestEncoder:
         enc = asn1.Encoder()
         enc.write(0x0102030405060708090A0B0C0D0E0F)
         res = enc.output()
-        assert (
-            res
-            == b"\x02\x0f\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f"
-        )
+        assert res == b"\x02\x0f\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f"
 
     def test_negative_integer(self) -> None:
         enc = asn1.Encoder()
@@ -44,10 +41,7 @@ class TestEncoder:
         enc = asn1.Encoder()
         enc.write(-0x0102030405060708090A0B0C0D0E0F)
         res = enc.output()
-        assert (
-            res
-            == b"\x02\x0f\xfe\xfd\xfc\xfb\xfa\xf9\xf8\xf7\xf6\xf5\xf4\xf3\xf2\xf1\xf1"
-        )
+        assert res == b"\x02\x0f\xfe\xfd\xfc\xfb\xfa\xf9\xf8\xf7\xf6\xf5\xf4\xf3\xf2\xf1\xf1"
 
     @pytest.mark.parametrize(
         ("number", "result"),
@@ -209,9 +203,7 @@ class TestEncoder:
             with pytest.raises(asn1.Error):
                 enc.output()
 
-    @pytest.mark.parametrize(
-        "value", ["1", "40.2.3", "1.40.3", "1.2.3.", ".1.2.3", "foo", "foo.bar"]
-    )
+    @pytest.mark.parametrize("value", ["1", "40.2.3", "1.40.3", "1.2.3.", ".1.2.3", "foo", "foo.bar"])
     def test_error_object_identifier(self, value) -> None:
         enc = asn1.Encoder()
         with pytest.raises(asn1.Error):
@@ -231,9 +223,7 @@ class TestDecoder:
         assert isinstance(val, int)
         assert val == result
 
-    @pytest.mark.parametrize(
-        ("buf", "result"), ((b"\x02\x01\x01", 1), (b"\x02\x04\xff\xff\xff\xff", -1))
-    )
+    @pytest.mark.parametrize(("buf", "result"), ((b"\x02\x01\x01", 1), (b"\x02\x04\xff\xff\xff\xff", -1)))
     def test_integer(self, buf: bytes, result: int) -> None:
         dec = asn1.Decoder(buf)
         tag = dec.peek()
@@ -591,9 +581,7 @@ class TestDecoder:
             dec.read()
 
     def test_big_negative_integer(self) -> None:
-        buf = (
-            b"\x02\x10\xff\x7f\x2b\x3a\x4d\xea\x48\x1e\x1f\x37\x7b\xa8\xbd\x7f\xb0\x16"
-        )
+        buf = b"\x02\x10\xff\x7f\x2b\x3a\x4d\xea\x48\x1e\x1f\x37\x7b\xa8\xbd\x7f\xb0\x16"
         dec = asn1.Decoder(buf)
         tag, val = dec.read()
         assert val == -668929531791034950848739021124816874

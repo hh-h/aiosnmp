@@ -32,7 +32,7 @@ jobs:
       - script: isort -q --check --diff aiosnmp tests examples
         displayName: 'Run isort'
 
-      - script: black -q --check --diff aiosnmp tests examples
+      - script: black -l 120 -q --check --diff aiosnmp tests examples
         displayName: 'Run black'
 
       - script: mypy aiosnmp
