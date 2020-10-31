@@ -29,7 +29,7 @@ from aiosnmp import Snmp
 async def test_snmp_types(
     host: str, port: int, oid: Union[str, List[str]], value: Any
 ) -> None:
-    with Snmp(host=host, port=port) as snmp:
+    async with Snmp(host=host, port=port) as snmp:
         results = await snmp.get(oid)
         assert len(results) == 1
         res = results[0]
@@ -39,7 +39,7 @@ async def test_snmp_types(
 
 @pytest.mark.asyncio
 async def test_snmp_get_next(host: str, port: int) -> None:
-    with Snmp(host=host, port=port) as snmp:
+    async with Snmp(host=host, port=port) as snmp:
         results = await snmp.get_next(".1.3.6.1.2.1.1")
         assert len(results) == 1
         res = results[0]
@@ -49,7 +49,7 @@ async def test_snmp_get_next(host: str, port: int) -> None:
 @pytest.mark.asyncio
 @pytest.mark.parametrize("max_repetitions", (1, 2, 5, 10, 25))
 async def test_snmp_get_bulk(host: str, port: int, max_repetitions: int) -> None:
-    with Snmp(host=host, port=port, max_repetitions=max_repetitions) as snmp:
+    async with Snmp(host=host, port=port, max_repetitions=max_repetitions) as snmp:
         results = await snmp.get_bulk(".1.3.6.1.2.1.1")
         assert len(results) == max_repetitions
         for res in results:
@@ -59,7 +59,9 @@ async def test_snmp_get_bulk(host: str, port: int, max_repetitions: int) -> None
 @pytest.mark.asyncio
 @pytest.mark.parametrize("max_repetitions", (1, 2, 5, 10, 25))
 async def test_snmp_bulk_walk(host: str, port: int, max_repetitions: int) -> None:
-    with Snmp(host=host, port=port, timeout=3, max_repetitions=max_repetitions) as snmp:
+    async with Snmp(
+        host=host, port=port, timeout=3, max_repetitions=max_repetitions
+    ) as snmp:
         results = await snmp.bulk_walk(".1.3.6.1.2.1.1.9")
         assert len(results) == 30
         for res in results:
@@ -68,7 +70,7 @@ async def test_snmp_bulk_walk(host: str, port: int, max_repetitions: int) -> Non
 
 @pytest.mark.asyncio
 async def test_snmp_walk(host: str, port: int) -> None:
-    with Snmp(host=host, port=port) as snmp:
+    async with Snmp(host=host, port=port) as snmp:
         results = await snmp.walk(".1.3.6.1.2.1.1.9.1.4")
         assert len(results) == 10
         for res in results:
@@ -77,7 +79,7 @@ async def test_snmp_walk(host: str, port: int) -> None:
 
 @pytest.mark.asyncio
 async def test_snmp_get_instead_of_walk(host: str, port: int) -> None:
-    with Snmp(host=host, port=port) as snmp:
+    async with Snmp(host=host, port=port) as snmp:
         results = await snmp.walk(".1.3.6.1.2.1.1.6.0")
         assert len(results) == 1
         res = results[0]
@@ -86,7 +88,7 @@ async def test_snmp_get_instead_of_walk(host: str, port: int) -> None:
 
 @pytest.mark.asyncio
 async def test_snmp_get_instead_of_bulk_walk(host: str, port: int) -> None:
-    with Snmp(host=host, port=port) as snmp:
+    async with Snmp(host=host, port=port) as snmp:
         results = await snmp.bulk_walk(".1.3.6.1.2.1.1.6.0")
         assert len(results) == 1
         res = results[0]
@@ -95,7 +97,7 @@ async def test_snmp_get_instead_of_bulk_walk(host: str, port: int) -> None:
 
 @pytest.mark.asyncio
 async def test_snmp_bulk_walk_end_of_mibs_from_the_start(host: str, port: int) -> None:
-    with Snmp(host=host, port=port, max_repetitions=15) as snmp:
+    async with Snmp(host=host, port=port, max_repetitions=15) as snmp:
         results = await snmp.bulk_walk(".1.3.6.1.6.3.16.1.5.2.1.6")
         assert len(results) == 6
         for res in results:
@@ -106,7 +108,7 @@ async def test_snmp_bulk_walk_end_of_mibs_from_the_start(host: str, port: int) -
 async def test_snmp_bulk_walk_end_of_mibs_after_some_requests(
     host: str, port: int
 ) -> None:
-    with Snmp(host=host, port=port, max_repetitions=15) as snmp:
+    async with Snmp(host=host, port=port, max_repetitions=15) as snmp:
         results = await snmp.bulk_walk(".1.3.6.1.6.3.16.1.5.2.1")
         assert len(results) == 24
         for res in results:
@@ -115,7 +117,7 @@ async def test_snmp_bulk_walk_end_of_mibs_after_some_requests(
 
 @pytest.mark.asyncio
 async def test_snmp_non_existing_oid(host: str, port: int) -> None:
-    with Snmp(host=host, port=port) as snmp:
+    async with Snmp(host=host, port=port) as snmp:
         results = await snmp.get(".1.3.6.1.2.1.1.6.0.12312")
         assert len(results) == 1
         res = results[0]
@@ -137,7 +139,7 @@ async def test_snmp_non_existing_oid(host: str, port: int) -> None:
 async def test_snmp_multiple_oids(
     host: str, port: int, oids: List[str], values: List[Any]
 ) -> None:
-    with Snmp(host=host, port=port) as snmp:
+    async with Snmp(host=host, port=port) as snmp:
         results = await snmp.get(oids)
         assert len(results) == len(oids)
         for res, oid, value in zip(results, oids, values):
@@ -166,7 +168,7 @@ async def test_snmp_multiple_oids(
 async def test_snmp_set(
     host: str, port: int, varbinds: List[Tuple[str, Union[int, str, bytes]]]
 ) -> None:
-    with Snmp(host=host, port=port, timeout=3, community="private") as snmp:
+    async with Snmp(host=host, port=port, timeout=3, community="private") as snmp:
         results = await snmp.set(varbinds)
         assert len(results) == len(varbinds)
         for varbind, res in zip(varbinds, results):
@@ -180,7 +182,7 @@ async def test_snmp_set(
 
 @pytest.mark.asyncio
 async def test_snmp_get_no_leading_dot(host: str, port: int) -> None:
-    with Snmp(host=host, port=port) as snmp:
+    async with Snmp(host=host, port=port) as snmp:
         results = await snmp.get("1.3.6.1.4.1.8072.2.255.2.1.2.1")
         assert len(results) == 1
         res = results[0]
@@ -196,7 +198,7 @@ async def test_snmp_get_no_leading_dot(host: str, port: int) -> None:
 
 @pytest.mark.asyncio
 async def test_snmp_get_next_no_leading_dot(host: str, port: int) -> None:
-    with Snmp(host=host, port=port) as snmp:
+    async with Snmp(host=host, port=port) as snmp:
         results = await snmp.get_next("1.3.6.1.2.1.1")
         assert len(results) == 1
         res = results[0]
@@ -209,7 +211,7 @@ async def test_snmp_get_next_no_leading_dot(host: str, port: int) -> None:
 async def test_snmp_get_bulk_no_leading_dot(
     host: str, port: int, max_repetitions: int
 ) -> None:
-    with Snmp(host=host, port=port, max_repetitions=max_repetitions) as snmp:
+    async with Snmp(host=host, port=port, max_repetitions=max_repetitions) as snmp:
         results = await snmp.get_bulk("1.3.6.1.2.1.1")
         assert len(results) == max_repetitions
         for res in results:
@@ -221,7 +223,9 @@ async def test_snmp_get_bulk_no_leading_dot(
 async def test_snmp_bulk_walk_no_leading_dot(
     host: str, port: int, max_repetitions: int
 ) -> None:
-    with Snmp(host=host, port=port, timeout=3, max_repetitions=max_repetitions) as snmp:
+    async with Snmp(
+        host=host, port=port, timeout=3, max_repetitions=max_repetitions
+    ) as snmp:
         results = await snmp.bulk_walk("1.3.6.1.2.1.1.9")
         assert len(results) == 30
         for res in results:
@@ -230,7 +234,7 @@ async def test_snmp_bulk_walk_no_leading_dot(
 
 @pytest.mark.asyncio
 async def test_snmp_walk_no_leading_dot(host: str, port: int) -> None:
-    with Snmp(host=host, port=port) as snmp:
+    async with Snmp(host=host, port=port) as snmp:
         results = await snmp.walk("1.3.6.1.2.1.1.9.1.4")
         assert len(results) == 10
         for res in results:
@@ -239,8 +243,15 @@ async def test_snmp_walk_no_leading_dot(host: str, port: int) -> None:
 
 @pytest.mark.asyncio
 async def test_snmp_set_no_leading_dot(host: str, port: int) -> None:
-    with Snmp(host=host, port=port, timeout=3, community="private") as snmp:
+    async with Snmp(host=host, port=port, timeout=3, community="private") as snmp:
         results = await snmp.set([("1.3.6.1.4.1.8072.2.255.2.1.2.1", 42)])
         assert len(results) == 1
         assert results[0].oid == ".1.3.6.1.4.1.8072.2.255.2.1.2.1"
         assert results[0].value == 42
+
+
+@pytest.mark.asyncio
+async def test_snmp_deprecated_context(host: str, port: int) -> None:
+    with pytest.warns(FutureWarning):
+        with Snmp(host=host, port=port) as snmp:
+            await snmp.get(".1.3.6.1.2.1.1.6.0")

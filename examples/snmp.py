@@ -4,7 +4,7 @@ import aiosnmp
 
 
 async def main():
-    with aiosnmp.Snmp(
+    async with aiosnmp.Snmp(
         host="127.0.0.1",
         port=161,
         community="public",
@@ -33,5 +33,4 @@ async def main():
             print(res.oid, res.value)
 
 
-loop = asyncio.get_event_loop()
-loop.run_until_complete(main())
+asyncio.run(main())

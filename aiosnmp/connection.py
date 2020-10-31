@@ -19,6 +19,7 @@ class SnmpConnection:
         "loop",
         "timeout",
         "retries",
+        "_closed",
     )
 
     def __init__(
@@ -37,6 +38,7 @@ class SnmpConnection:
         self._peername: Optional[Address] = None
         self.timeout: float = timeout
         self.retries: int = retries
+        self._closed: bool = False
 
     async def _connect(self) -> None:
         connect_future = self.loop.create_datagram_endpoint(
@@ -53,6 +55,14 @@ class SnmpConnection:
             "peername", default=(self.host, self.port)
         )
 
+    @property
+    def is_closed(self) -> bool:
+        return self._closed
+
+    @property
+    def is_connected(self) -> bool:
+        return bool(self._protocol is not None and self._protocol.is_connected)
+
     def close(self) -> None:
         if self._transport is not None and not self._transport.is_closing():
             self._transport.close()
@@ -60,3 +70,4 @@ class SnmpConnection:
         self._protocol = None
         self._transport = None
         self._peername = None
+        self._closed = True
