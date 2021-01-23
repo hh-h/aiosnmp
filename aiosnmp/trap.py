@@ -1,7 +1,7 @@
 __all__ = ("SnmpV2TrapServer",)
 
 import asyncio
-from typing import Callable, Iterable, Optional, Set
+from typing import Callable, Iterable, Optional, Set, Tuple, cast
 
 from .message import SnmpV2TrapMessage
 from .protocols import SnmpTrapProtocol
@@ -29,10 +29,11 @@ class SnmpV2TrapServer:
             self.communities = set(communities)
         self.handler: Callable = handler
 
-    async def run(self) -> None:
+    async def run(self) -> Tuple[asyncio.BaseTransport, SnmpTrapProtocol]:
         loop = asyncio.get_event_loop()
 
-        await loop.create_datagram_endpoint(
+        transport, protocol = await loop.create_datagram_endpoint(
             lambda: SnmpTrapProtocol(self.communities, self.handler),
             local_addr=(self.host, self.port),
         )
+        return transport, cast(SnmpTrapProtocol, protocol)

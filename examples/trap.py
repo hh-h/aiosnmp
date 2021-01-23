@@ -9,9 +9,13 @@ async def handler(host: str, port: int, message: aiosnmp.SnmpV2TrapMessage) -> N
         print(f"oid: {d.oid}, value: {d.value}")
 
 
-async def main():
-    p = aiosnmp.SnmpV2TrapServer(host="127.0.0.1", port=162, communities=("public",), handler=handler)
-    await p.run()
+if __name__ == "__main__":
+    loop = asyncio.get_event_loop()
+    trap_server = aiosnmp.SnmpV2TrapServer(host="127.0.0.1", port=162, communities=("public",), handler=handler)
+    transport, _ = loop.run_until_complete(trap_server.run())
 
-
-asyncio.run(main())
+    try:
+        print(f"running server on {trap_server.host}:{trap_server.port}")
+        loop.run_forever()
+    finally:
+        transport.close()
