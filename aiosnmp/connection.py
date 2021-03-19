@@ -16,6 +16,8 @@ class SnmpConnection:
         "_peername",
         "host",
         "port",
+        "local_addr",
+        "local_port",
         "loop",
         "timeout",
         "retries",
@@ -27,11 +29,15 @@ class SnmpConnection:
         *,
         host: str,
         port: int = 161,
+        local_addr: str = None,
+        local_port: int = 0,
         timeout: float = DEFAULT_TIMEOUT,
         retries: int = DEFAULT_RETRIES,
     ) -> None:
         self.host: str = host
         self.port: int = port
+        self.local_addr: str = local_addr
+        self.local_port: int = local_port
         self.loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
         self._protocol: Optional[SnmpProtocol] = None
         self._transport: Optional[asyncio.DatagramTransport] = None
@@ -44,6 +50,7 @@ class SnmpConnection:
         connect_future = self.loop.create_datagram_endpoint(
             lambda: SnmpProtocol(self.timeout, self.retries),
             remote_addr=(self.host, self.port),
+            local_addr=(self.local_addr, self.local_port) if self.local_addr else None
         )
         transport, protocol = await asyncio.wait_for(connect_future, timeout=self.timeout)
 
