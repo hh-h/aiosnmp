@@ -41,7 +41,7 @@ class SnmpConnection:
         self.timeout: float = timeout
         self.retries: int = retries
         self._closed: bool = False
-        self.local_addr: Tuple[str, int] = local_addr
+        self.local_addr: Optional[Tuple[str, int]] = local_addr
 
     async def _connect(self) -> None:
         connect_future = self.loop.create_datagram_endpoint(
