@@ -1,7 +1,7 @@
 __all__ = ("SnmpConnection",)
 
 import asyncio
-from typing import Optional, cast
+from typing import Optional, Tuple, cast
 
 from .protocols import Address, SnmpProtocol
 
@@ -16,6 +16,7 @@ class SnmpConnection:
         "_peername",
         "host",
         "port",
+        "local_addr",
         "loop",
         "timeout",
         "retries",
@@ -29,6 +30,7 @@ class SnmpConnection:
         port: int = 161,
         timeout: float = DEFAULT_TIMEOUT,
         retries: int = DEFAULT_RETRIES,
+        local_addr: Optional[Tuple[str, int]] = None
     ) -> None:
         self.host: str = host
         self.port: int = port
@@ -39,11 +41,13 @@ class SnmpConnection:
         self.timeout: float = timeout
         self.retries: int = retries
         self._closed: bool = False
+        self.local_addr: Optional[Tuple[str, int]] = local_addr
 
     async def _connect(self) -> None:
         connect_future = self.loop.create_datagram_endpoint(
             lambda: SnmpProtocol(self.timeout, self.retries),
             remote_addr=(self.host, self.port),
+            local_addr=self.local_addr,
         )
         transport, protocol = await asyncio.wait_for(connect_future, timeout=self.timeout)
 
