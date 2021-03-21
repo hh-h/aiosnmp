@@ -47,7 +47,7 @@ class SnmpConnection:
         connect_future = self.loop.create_datagram_endpoint(
             lambda: SnmpProtocol(self.timeout, self.retries),
             remote_addr=(self.host, self.port),
-            local_addr=self.local_addr
+            local_addr=self.local_addr,
         )
         transport, protocol = await asyncio.wait_for(connect_future, timeout=self.timeout)
 
