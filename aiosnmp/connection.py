@@ -1,7 +1,7 @@
 __all__ = ("SnmpConnection",)
 
 import asyncio
-from typing import Optional, cast, Tuple
+from typing import Optional, Tuple, cast
 
 from .protocols import Address, SnmpProtocol
 
