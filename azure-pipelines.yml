@@ -15,7 +15,7 @@ resources:
 jobs:
   - job: check
     pool:
-      vmImage: 'ubuntu-latest'
+      vmImage: 'ubuntu-20.04'
 
     steps:
       - task: UsePythonVersion@0
@@ -40,7 +40,7 @@ jobs:
 
   - job: tests
     pool:
-      vmImage: 'ubuntu-latest'
+      vmImage: 'ubuntu-18.04'
 
     strategy:
       matrix:
@@ -76,6 +76,9 @@ jobs:
           architecture: 'x64'
         displayName: 'Use Python $(python.version)'
 
+      - script: docker -v
+        displayName: 'Docker Version'
+
       - script: docker ps
         displayName: 'Docker PS'
 
@@ -96,7 +99,7 @@ jobs:
 
   - job: twine
     pool:
-      vmImage: 'ubuntu-latest'
+      vmImage: 'ubuntu-20.04'
 
     dependsOn:
       - check
