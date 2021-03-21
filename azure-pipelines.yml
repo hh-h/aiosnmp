@@ -15,7 +15,7 @@ resources:
 jobs:
   - job: check
     pool:
-      vmImage: 'ubuntu-20.04'
+      vmImage: 'ubuntu-latest'
 
     steps:
       - task: UsePythonVersion@0
@@ -40,7 +40,7 @@ jobs:
 
   - job: tests
     pool:
-      vmImage: 'ubuntu-18.04'
+      vmImage: 'ubuntu-latest'
 
     strategy:
       matrix:
@@ -99,7 +99,7 @@ jobs:
 
   - job: twine
     pool:
-      vmImage: 'ubuntu-20.04'
+      vmImage: 'ubuntu-latest'
 
     dependsOn:
       - check
