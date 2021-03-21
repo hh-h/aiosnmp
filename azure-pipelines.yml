@@ -10,7 +10,7 @@ resources:
   - container: snmp
     image: koshh/aiosnmp:latest
     ports:
-      - 161:161/udp
+      - 55161:161/udp
 
 jobs:
   - job: check
