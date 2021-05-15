@@ -21,6 +21,7 @@ class SnmpConnection:
         "timeout",
         "retries",
         "_closed",
+        "validate_source_addr",
     )
 
     def __init__(
@@ -30,7 +31,8 @@ class SnmpConnection:
         port: int = 161,
         timeout: float = DEFAULT_TIMEOUT,
         retries: int = DEFAULT_RETRIES,
-        local_addr: Optional[Tuple[str, int]] = None
+        local_addr: Optional[Tuple[str, int]] = None,
+        validate_source_addr: bool = True,
     ) -> None:
         self.host: str = host
         self.port: int = port
@@ -42,10 +44,11 @@ class SnmpConnection:
         self.retries: int = retries
         self._closed: bool = False
         self.local_addr: Optional[Tuple[str, int]] = local_addr
+        self.validate_source_addr: bool = validate_source_addr
 
     async def _connect(self) -> None:
         connect_future = self.loop.create_datagram_endpoint(
-            lambda: SnmpProtocol(self.timeout, self.retries),
+            lambda: SnmpProtocol(self.timeout, self.retries, self.validate_source_addr),
             remote_addr=(self.host, self.port),
             local_addr=self.local_addr,
         )

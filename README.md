@@ -17,6 +17,11 @@ pip install aiosnmp
 Only snmp v2c supported, v3 version is not supported  
 Oids should be like `.1.3.6...` or `1.3.6...`. `iso.3.6...` is not supported
 
+
+## Source address (host and port) validation
+By default, v2c should not validate source addr, but in this library, it is enabled by default.
+You can disable validation by passing `validate_source_addr=False` to `Snmp`.
+
 ## Basic Usage
 ```python
 import asyncio

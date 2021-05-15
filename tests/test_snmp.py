@@ -235,3 +235,10 @@ async def test_snmp_deprecated_context(host: str, port: int) -> None:
     with pytest.warns(FutureWarning):
         with Snmp(host=host, port=port) as snmp:
             await snmp.get(".1.3.6.1.2.1.1.6.0")
+
+
+@pytest.mark.asyncio
+async def test_snmp_disable_validation_source_addr(host: str, port: int) -> None:
+    async with Snmp(host=host, port=port, validate_source_addr=False) as snmp:
+        results = await snmp.get(".1.3.6.1.2.1.1.6.0.12312")
+        assert len(results) == 1

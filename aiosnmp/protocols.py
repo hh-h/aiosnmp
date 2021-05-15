@@ -48,6 +48,7 @@ _ERROR_STATUS_TO_EXCEPTION = {
 }
 
 Address = Union[Tuple[str, int], Tuple[str, int, int, int]]
+RequestsKey = Union[Tuple[str, int, int], int]
 
 
 class SnmpTrapProtocol(asyncio.DatagramProtocol):
@@ -80,13 +81,14 @@ class SnmpTrapProtocol(asyncio.DatagramProtocol):
 
 
 class SnmpProtocol(asyncio.DatagramProtocol):
-    __slots__ = ("loop", "transport", "requests", "timeout", "retries")
+    __slots__ = ("loop", "transport", "requests", "timeout", "retries", "validate_source_addr")
 
-    def __init__(self, timeout: float, retries: int) -> None:
+    def __init__(self, timeout: float, retries: int, validate_source_addr: bool) -> None:
         self.loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
-        self.requests: Dict[Tuple[str, int, int], asyncio.Future] = {}
+        self.requests: Dict[RequestsKey, asyncio.Future] = {}
         self.timeout: float = timeout
         self.retries: int = retries
+        self.validate_source_addr: bool = validate_source_addr
 
     def connection_made(self, transport: asyncio.BaseTransport) -> None:
         self.transport = cast(asyncio.DatagramTransport, transport)
@@ -104,7 +106,9 @@ class SnmpProtocol(asyncio.DatagramProtocol):
             logger.warning(f"could not decode received data from {host}:{port}: {exc}")
             return
 
-        key = (host, port, message.data.request_id)
+        key: RequestsKey = (
+            (host, port, message.data.request_id) if self.validate_source_addr else message.data.request_id
+        )
         if key in self.requests:
             exception: Optional[Exception] = None
             if isinstance(message.data, PDU) and message.data.error_status != 0:
@@ -126,7 +130,9 @@ class SnmpProtocol(asyncio.DatagramProtocol):
         return bool(self.transport is not None and not self.transport.is_closing())
 
     async def _send(self, message: SnmpMessage, host: str, port: int) -> List[SnmpVarbind]:
-        key = (host, port, message.data.request_id)
+        key: RequestsKey = (
+            (host, port, message.data.request_id) if self.validate_source_addr else message.data.request_id
+        )
         fut: asyncio.Future = self.loop.create_future()
         fut.add_done_callback(lambda fn: self.requests.pop(key) if key in self.requests else None)
         self.requests[key] = fut
