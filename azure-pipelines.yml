@@ -44,12 +44,6 @@ jobs:
 
     strategy:
       matrix:
-        Python36-asyncio:
-          python.version: '3.6'
-          loop: 'asyncio'
-        Python36-uvloop:
-          python.version: '3.6'
-          loop: 'uvloop'
         Python37-asyncio:
           python.version: '3.7'
           loop: 'asyncio'

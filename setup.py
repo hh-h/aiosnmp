@@ -23,7 +23,6 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Intended Audience :: Developers",
         "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
@@ -32,5 +31,5 @@ setup(
         "Operating System :: MacOS :: MacOS X",
         "Framework :: AsyncIO",
     ],
-    python_requires=">=3.6",
+    python_requires=">=3.7",
 )
