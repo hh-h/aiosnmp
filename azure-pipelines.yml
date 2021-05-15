@@ -23,19 +23,19 @@ jobs:
           versionSpec: '3.9'
           architecture: 'x64'
 
-      - script: pip install mypy isort flake8 black
+      - script: pip install mypy==0.812 isort==5.8.0 flake8==3.9.2 black==21.5b1
         displayName: 'Install Dependencies'
 
-      - script: flake8 aiosnmp tests examples
+      - script: flake8 aiosnmp/ tests/ examples/ setup.py
         displayName: 'Run flake8'
 
-      - script: isort -q --check --diff aiosnmp tests examples
+      - script: isort -q --check --diff aiosnmp/ tests/ examples/ setup.py
         displayName: 'Run isort'
 
-      - script: black -l 120 -q --check --diff aiosnmp tests examples
+      - script: black -l 120 -q --check --diff aiosnmp/ tests/ examples/ setup.py
         displayName: 'Run black'
 
-      - script: mypy aiosnmp
+      - script: mypy aiosnmp/
         displayName: 'Run mypy'
 
   - job: tests
@@ -82,10 +82,10 @@ jobs:
       - script: env
         displayName: 'Env'
 
-      - script: pip install pytest-xdist pytest-asyncio pytest-cov uvloop codecov
+      - script: pip install pytest==6.2.4 pytest-asyncio==0.15.1 pytest-cov==2.12.0 uvloop==0.15.2 codecov==2.1.11
         displayName: 'Install Dependencies'
 
-      - script: pytest -n 1 --durations=5 --cov=aiosnmp --cov-report=term-missing --event-loop=$(loop)
+      - script: pytest -v --durations=5 --cov=aiosnmp --cov-report=term-missing --event-loop=$(loop)
         displayName: 'Run Tests'
 
       - script: bash <(curl -s https://codecov.io/bash)
