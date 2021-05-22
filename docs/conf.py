@@ -22,7 +22,7 @@ copyright = '2021, Valetov Konstantin'
 author = 'Valetov Konstantin'
 
 # The full version, including alpha/beta/rc tags
-release = '0.4.1'
+release = '0.5.0'
 
 
 # -- General configuration ---------------------------------------------------
