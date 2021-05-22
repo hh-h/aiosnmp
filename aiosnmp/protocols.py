@@ -63,7 +63,7 @@ class SnmpTrapProtocol(asyncio.DatagramProtocol):
         self.transport = cast(asyncio.DatagramTransport, transport)
 
     def datagram_received(self, data: Union[bytes, Text], addr: Address) -> None:
-        host, port = addr[:2]
+        host, port = addr[0], addr[1]
 
         if isinstance(data, Text):
             logger.warning(f"received data from {host}:{port} should be bytes")
@@ -94,7 +94,7 @@ class SnmpProtocol(asyncio.DatagramProtocol):
         self.transport = cast(asyncio.DatagramTransport, transport)
 
     def datagram_received(self, data: Union[bytes, Text], addr: Address) -> None:
-        host, port = addr[:2]
+        host, port = addr[0], addr[1]
 
         if isinstance(data, Text):
             logger.warning(f"received data from {host}:{port} should be bytes")
@@ -129,7 +129,8 @@ class SnmpProtocol(asyncio.DatagramProtocol):
     def is_connected(self) -> bool:
         return bool(self.transport is not None and not self.transport.is_closing())
 
-    async def _send(self, message: SnmpMessage, host: str, port: int) -> List[SnmpVarbind]:
+    async def _send(self, message: SnmpMessage, addr: Address) -> List[SnmpVarbind]:
+        host, port = addr[0], addr[1]
         key: RequestsKey = (
             (host, port, message.data.request_id) if self.validate_source_addr else message.data.request_id
         )
@@ -137,11 +138,13 @@ class SnmpProtocol(asyncio.DatagramProtocol):
         fut.add_done_callback(lambda fn: self.requests.pop(key) if key in self.requests else None)
         self.requests[key] = fut
         for _ in range(self.retries):
-            self.transport.sendto(message.encode())
+            self.transport.sendto(message.encode(), addr)
             done, _ = await asyncio.wait({fut}, timeout=self.timeout, return_when=asyncio.ALL_COMPLETED)
             if not done:
                 continue
+
             r: List[SnmpVarbind] = fut.result()
             return r
+
         fut.cancel()
         raise SnmpTimeoutError

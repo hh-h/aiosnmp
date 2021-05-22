@@ -13,7 +13,7 @@ class SnmpConnection:
     __slots__ = (
         "_protocol",
         "_transport",
-        "_peername",
+        "_sockaddr",
         "host",
         "port",
         "local_addr",
@@ -39,7 +39,7 @@ class SnmpConnection:
         self.loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
         self._protocol: Optional[SnmpProtocol] = None
         self._transport: Optional[asyncio.DatagramTransport] = None
-        self._peername: Optional[Address] = None
+        self._sockaddr: Optional[Address] = None
         self.timeout: float = timeout
         self.retries: int = retries
         self._closed: bool = False
@@ -47,16 +47,17 @@ class SnmpConnection:
         self.validate_source_addr: bool = validate_source_addr
 
     async def _connect(self) -> None:
+        gai = await self.loop.getaddrinfo(self.host, self.port)
+        address_family, *_, self._sockaddr = gai[0]
         connect_future = self.loop.create_datagram_endpoint(
             lambda: SnmpProtocol(self.timeout, self.retries, self.validate_source_addr),
-            remote_addr=(self.host, self.port),
             local_addr=self.local_addr,
+            family=address_family,
         )
         transport, protocol = await asyncio.wait_for(connect_future, timeout=self.timeout)
 
         self._protocol = cast(SnmpProtocol, protocol)
         self._transport = cast(asyncio.DatagramTransport, transport)
-        self._peername = self._transport.get_extra_info("peername", default=(self.host, self.port))
 
     @property
     def is_closed(self) -> bool:
@@ -72,5 +73,5 @@ class SnmpConnection:
 
         self._protocol = None
         self._transport = None
-        self._peername = None
+        self._sockaddr = None
         self._closed = True
