@@ -26,18 +26,20 @@ from typing import Optional
 
 
 class SnmpException(Exception):
-    pass
+    """Base class for exceptions"""
 
 
 class SnmpTimeoutError(SnmpException, TimeoutError):
-    pass
+    """The operation exceeded the given deadline"""
 
 
 class SnmpUnsupportedValueType(SnmpException):
-    pass
+    """Provided value type is unsupported"""
 
 
 class SnmpErrorStatus(SnmpException):
+    """Base class for SNMP errors"""
+
     message = ""
 
     def __init__(self, index: int, oid: Optional[str] = None) -> None:
@@ -49,20 +51,29 @@ class SnmpErrorStatus(SnmpException):
 
 
 class SnmpErrorTooBig(SnmpErrorStatus):
-    message = "The agent could not place the results " "of the requested SNMP operation in a single SNMP message."
+    """The agent could not place the results of the requested SNMP operation in a single SNMP message."""
+
+    message = "The agent could not place the results of the requested SNMP operation in a single SNMP message."
 
 
 class SnmpErrorNoSuchName(SnmpErrorStatus):
+    """The requested SNMP operation identified an unknown variable."""
+
     message = "The requested SNMP operation identified an unknown variable."
 
 
 class SnmpErrorBadValue(SnmpErrorStatus):
-    message = (
-        "The requested SNMP operation tried to change a variable " "but it specified either a syntax or value error."
-    )
+    """The requested SNMP operation tried to change a variable but it specified either a syntax or value error."""
+
+    message = "The requested SNMP operation tried to change a variable but it specified either a syntax or value error."
 
 
 class SnmpErrorReadOnly(SnmpErrorStatus):
+    """
+    The requested SNMP operation tried to change a variable that was not allowed to change,
+    according to the community profile of the variable.
+    """
+
     message = (
         "The requested SNMP operation tried to change a variable "
         "that was not allowed to change, "
@@ -71,22 +82,33 @@ class SnmpErrorReadOnly(SnmpErrorStatus):
 
 
 class SnmpErrorGenErr(SnmpErrorStatus):
-    message = "An error other than one of those listed here " "occurred during the requested SNMP operation."
+    """An error other than one of those listed here occurred during the requested SNMP operation.s"""
+
+    message = "An error other than one of those listed here occurred during the requested SNMP operation."
 
 
 class SnmpErrorNoAccess(SnmpErrorStatus):
+    """The specified SNMP variable is not accessible."""
+
     message = "The specified SNMP variable is not accessible."
 
 
 class SnmpErrorWrongType(SnmpErrorStatus):
-    message = "The value specifies a type that is inconsistent " "with the type required for the variable."
+    """The value specifies a type that is inconsistent with the type required for the variable."""
+
+    message = "The value specifies a type that is inconsistent with the type required for the variable."
 
 
 class SnmpErrorWrongLength(SnmpErrorStatus):
-    message = "The value specifies a length that is inconsistent " "with the length required for the variable."
+    """The value specifies a length that is inconsistent with the length required for the variable."""
+
+    message = "The value specifies a length that is inconsistent with the length required for the variable."
 
 
 class SnmpErrorWrongEncoding(SnmpErrorStatus):
+    """The value contains an Abstract Syntax Notation One (ASN.1) encoding
+    that is inconsistent with the ASN.1 tag of the field."""
+
     message = (
         "The value contains an Abstract Syntax Notation One (ASN.1) encoding "
         "that is inconsistent with the ASN.1 tag of the field."
@@ -94,26 +116,39 @@ class SnmpErrorWrongEncoding(SnmpErrorStatus):
 
 
 class SnmpErrorWrongValue(SnmpErrorStatus):
+    """The value cannot be assigned to the variable."""
+
     message = "The value cannot be assigned to the variable."
 
 
 class SnmpErrorNoCreation(SnmpErrorStatus):
+    """The variable does not exist, and the agent cannot create it."""
+
     message = "The variable does not exist, and the agent cannot create it."
 
 
 class SnmpErrorInconsistentValue(SnmpErrorStatus):
+    """The value is inconsistent with values of other managed objects."""
+
     message = "The value is inconsistent with values of other managed objects."
 
 
 class SnmpErrorResourceUnavailable(SnmpErrorStatus):
-    message = "Assigning the value to the variable requires allocation of resources " "that are currently unavailable."
+    """Assigning the value to the variable requires allocation of resources that are currently unavailable."""
+
+    message = "Assigning the value to the variable requires allocation of resources that are currently unavailable."
 
 
 class SnmpErrorCommitFailed(SnmpErrorStatus):
+    """No validation errors occurred, but no variables were updated."""
+
     message = "No validation errors occurred, but no variables were updated."
 
 
 class SnmpErrorUndoFailed(SnmpErrorStatus):
+    """No validation errors occurred. Some variables were updated
+    because it was not possible to undo their assignment."""
+
     message = (
         "No validation errors occurred. Some variables were updated "
         "because it was not possible to undo their assignment."
@@ -121,14 +156,21 @@ class SnmpErrorUndoFailed(SnmpErrorStatus):
 
 
 class SnmpErrorAuthorizationError(SnmpErrorStatus):
+    """An authorization error occurred."""
+
     message = "An authorization error occurred."
 
 
 class SnmpErrorNotWritable(SnmpErrorStatus):
+    """The variable exists but the agent cannot modify it."""
+
     message = "The variable exists but the agent cannot modify it."
 
 
 class SnmpErrorInconsistentName(SnmpErrorStatus):
+    """The variable does not exist; the agent cannot create it because
+    the named object instance is inconsistent with the values of other managed objects."""
+
     message = (
         "The variable does not exist; "
         "the agent cannot create it because the named object instance "
