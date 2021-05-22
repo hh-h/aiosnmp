@@ -63,8 +63,8 @@ class Snmp(SnmpConnection):
         if self._protocol is None:
             raise Exception("Connection is closed")
 
-        assert self._peername
-        return await self._protocol._send(message, *self._peername[:2])
+        assert self._sockaddr
+        return await self._protocol._send(message, self._sockaddr)
 
     async def get(self, oids: Union[str, List[str]]) -> List[SnmpVarbind]:
         if isinstance(oids, str):
