@@ -38,7 +38,7 @@ class PDUType(enum.IntEnum):
 
 
 class SnmpVarbind:
-    __slots__ = ("_oid", "value")
+    __slots__ = ("_oid", "_value")
 
     def __init__(
         self,
@@ -46,11 +46,19 @@ class SnmpVarbind:
         value: Union[None, str, int, bytes, ipaddress.IPv4Address] = None,
     ) -> None:
         self._oid: str = oid.lstrip(".")
-        self.value: Union[None, str, int, bytes, ipaddress.IPv4Address] = value
+        self._value: Union[None, str, int, bytes, ipaddress.IPv4Address] = value
 
     @property
     def oid(self) -> str:
+        """This property stores oid of the message"""
+
         return f".{self._oid}"
+
+    @property
+    def value(self) -> Union[None, str, int, bytes, ipaddress.IPv4Address]:
+        """This property stores value of the message"""
+
+        return self._value
 
     def encode(self, encoder: Encoder) -> None:
         with encoder.enter(Number.Sequence):
@@ -183,12 +191,27 @@ class SnmpResponse(SnmpMessage):
 
 
 class SnmpV2TrapMessage:
-    __slots__ = ("version", "community", "data")
+    __slots__ = ("_version", "_community", "_data")
 
     def __init__(self, version: SnmpVersion, community: str, data: PDU) -> None:
-        self.version: SnmpVersion = version
-        self.community: str = community
-        self.data: PDU = data
+        self._version: SnmpVersion = version
+        self._community: str = community
+        self._data: PDU = data
+
+    @property
+    def version(self) -> SnmpVersion:
+        """Returns version of the message"""
+        return self._version
+
+    @property
+    def community(self) -> str:
+        """Returns community of the message"""
+        return self._community
+
+    @property
+    def data(self) -> PDU:
+        """Returns :class:`protocol data unit <PDU>` of the message"""
+        return self._data
 
     @classmethod
     def decode(cls, data: bytes) -> Optional["SnmpV2TrapMessage"]:

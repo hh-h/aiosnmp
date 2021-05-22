@@ -75,7 +75,7 @@ class SnmpTrapProtocol(asyncio.DatagramProtocol):
             logger.warning(f"could not decode received data from {host}:{port}: {exc}")
             return
 
-        if not message or (self.communities and message.community not in self.communities):
+        if not message or (self.communities and message._community not in self.communities):
             return
         asyncio.ensure_future(self.handler(host, port, message))
 

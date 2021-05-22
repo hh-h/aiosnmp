@@ -4,7 +4,7 @@ from setuptools import setup
 
 import aiosnmp
 
-readme = Path(__file__).with_name("README.md")
+readme = Path(__file__).with_name("README.rst")
 
 setup(
     name="aiosnmp",
@@ -16,7 +16,7 @@ setup(
     author_email="forjob@thetrue.name",
     description="asyncio SNMP client",
     long_description=readme.read_text("utf-8"),
-    long_description_content_type="text/markdown",
+    long_description_content_type="text/x-rst",
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
     classifiers=[
