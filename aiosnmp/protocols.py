@@ -1,7 +1,7 @@
 import asyncio
 from typing import Callable, Dict, List, Optional, Set, Text, Tuple, Union, cast
 
-from .asn1 import Error
+from .asn1_rust import Error
 from .exceptions import (
     SnmpErrorAuthorizationError,
     SnmpErrorBadValue,

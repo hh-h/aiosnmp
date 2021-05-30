@@ -32,16 +32,130 @@ jobs:
       - script: isort -q --check --diff aiosnmp/ tests/ examples/ setup.py
         displayName: 'Run isort'
 
-      - script: black -l 120 -q --check --diff aiosnmp/ tests/ examples/ setup.py
+      - script: black -q --check --diff aiosnmp/ tests/ examples/ setup.py
         displayName: 'Run black'
 
       - script: mypy aiosnmp/
         displayName: 'Run mypy'
 
-  - job: tests
+  - job: macos
+    dependsOn:
+      - check
+    pool:
+      vmImage: 'macOS-10.15'
+
+    variables:
+      CIBW_BUILD: cp3[789]*
+      CIBW_TEST_REQUIRES: pytest==6.2.4
+      CIBW_TEST_COMMAND: pytest $(Build.SourcesDirectory)/tests/test_asn1.py
+
+    steps:
+      - task: UsePythonVersion@0
+
+      - script: |
+          set -o errexit
+          python3 -m pip install --upgrade pip
+          python3 -m pip install cibuildwheel==2.0.0a2
+        displayName: Install dependencies
+
+      - script: cibuildwheel --output-dir wheelhouse .
+        displayName: Build wheels
+
+      - task: PublishPipelineArtifact@1
+        inputs:
+          targetPath: wheelhouse
+          artifactName: macos_wheels
+          parallel: true
+
+  - job: linux
+    dependsOn:
+      - check
+    pool:
+      vmImage: 'Ubuntu-20.04'
+    variables:
+      CIBW_BUILD: cp3[789]*
+      CIBW_SKIP: "*_i686"
+      CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
+      CIBW_BEFORE_ALL: curl https://sh.rustup.rs -sSf | sh -s -- -y
+      CIBW_ENVIRONMENT: 'PATH="$HOME/.cargo/bin:$PATH"'
+      CIBW_TEST_REQUIRES: pytest==6.2.4
+      CIBW_TEST_COMMAND: pytest /project/tests/test_asn1.py
+
+    steps:
+      - task: UsePythonVersion@0
+
+      - script: |
+          set -o errexit
+          python3 -m pip install --upgrade pip
+          pip3 install cibuildwheel==2.0.0a2
+        displayName: Install dependencies
+
+      - script: cibuildwheel --output-dir wheelhouse .
+        displayName: Build wheels
+
+      - task: PublishPipelineArtifact@1
+        inputs:
+          targetPath: wheelhouse
+          artifactName: linux_wheels
+          parallel: true
+
+  - job: windows
+    dependsOn:
+      - check
+    pool:
+      vmImage: 'vs2017-win2016'
+    variables:
+      CIBW_BUILD: cp3[789]*
+      CIBW_SKIP: "*-win32"
+      CIBW_TEST_REQUIRES: pytest==6.2.4
+      CIBW_TEST_COMMAND: pytest $(Build.SourcesDirectory)\\tests\\test_asn1.py
+
+    steps:
+      - task: UsePythonVersion@0
+
+      - script: |
+          set -o errexit
+          python -m pip install --upgrade pip
+          pip install cibuildwheel==2.0.0a2
+        displayName: Install dependencies
+
+      - script: cibuildwheel --output-dir wheelhouse .
+        displayName: Build wheels
+
+      - task: PublishPipelineArtifact@1
+        inputs:
+          targetPath: wheelhouse
+          artifactName: windows_wheels
+          parallel: true
+
+  - job: sdist
+    dependsOn:
+      - check
     pool:
       vmImage: 'ubuntu-latest'
 
+    steps:
+      - task: UsePythonVersion@0
+
+      - script: |
+          set -o errexit
+          python -m pip install --upgrade pip
+          pip install setuptools-rust==0.12.1
+        displayName: Install dependencies
+
+      - script: python setup.py sdist
+        displayName: Build tar.gz
+
+      - task: PublishPipelineArtifact@1
+        inputs:
+          targetPath: dist
+          artifactName: sdist
+
+  - job: tests
+    dependsOn:
+      - linux
+    pool:
+      vmImage: 'ubuntu-latest'
     strategy:
       matrix:
         Python37-asyncio:
@@ -70,16 +184,21 @@ jobs:
           architecture: 'x64'
         displayName: 'Use Python $(python.version)'
 
+      - task: DownloadPipelineArtifact@2
+        inputs:
+          artifact: linux_wheels
+          path: $(System.DefaultWorkingDirectory)/wheels
+
+      - script: pip install --find-links $(System.DefaultWorkingDirectory)/wheels aiosnmp
+        displayName: 'Install aiosnmp'
+
       - script: docker ps
         displayName: 'Docker PS'
-
-      - script: env
-        displayName: 'Env'
 
       - script: pip install pytest==6.2.4 pytest-asyncio==0.15.1 pytest-cov==2.12.0 uvloop==0.15.2 codecov==2.1.11
         displayName: 'Install Dependencies'
 
-      - script: pytest -v --durations=5 --cov=aiosnmp --cov-report=term-missing --event-loop=$(loop)
+      - script: pytest --durations=5 --cov=aiosnmp --cov-report=term-missing --event-loop=$(loop) tests/
         displayName: 'Run Tests'
 
       - script: bash <(curl -s https://codecov.io/bash)
@@ -91,9 +210,12 @@ jobs:
   - job: twine
     pool:
       vmImage: 'ubuntu-latest'
-
     dependsOn:
       - check
+      - linux
+      - macos
+      - windows
+      - sdist
       - tests
     condition: and(succeeded(), startsWith(variables['build.sourceBranch'], 'refs/tags/'))
 
@@ -103,16 +225,33 @@ jobs:
           versionSpec: '3.9'
           architecture: 'x64'
 
-      - script: pip install wheel twine
-        displayName: 'Install Dependencies'
+      - task: DownloadPipelineArtifact@2
+        inputs:
+          artifact: macos_wheels
+          path: $(System.DefaultWorkingDirectory)/wheels
 
-      - script: python setup.py bdist_wheel
-        displayName: 'Build'
+      - task: DownloadPipelineArtifact@2
+        inputs:
+          artifact: linux_wheels
+          path: $(System.DefaultWorkingDirectory)/wheels
+
+      - task: DownloadPipelineArtifact@2
+        inputs:
+          artifact: windows_wheels
+          path: $(System.DefaultWorkingDirectory)/wheels
+
+      - task: DownloadPipelineArtifact@2
+        inputs:
+          artifact: sdist
+          path: $(System.DefaultWorkingDirectory)/wheels
+
+      - script: pip install twine
+        displayName: 'Install Dependencies'
 
       - task: TwineAuthenticate@1
         displayName: 'Twine Authenticate'
         inputs:
           pythonUploadServiceConnection: uploadToPypi
 
-      - script: python -m twine upload -r uploadToPypi --config-file $(PYPIRC_PATH) dist/*
+      - script: python -m twine upload -r uploadToPypi --config-file $(PYPIRC_PATH) wheels/*
         displayName: 'Upload'
