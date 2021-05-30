@@ -105,3 +105,8 @@ venv.bak/
 
 # idea
 .idea/
+
+
+# Added by cargo
+
+/target

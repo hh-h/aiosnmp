@@ -1,0 +1,14 @@
+[package]
+name = "aiosnmp"
+version = "0.5.0"
+authors = ["Konstantin Valetov <forjob@thetrue.name>"]
+edition = "2018"
+
+[lib]
+name = "asn1_rust"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.13.2", features = ["extension-module"] }
+regex = "1.5.4"
+lazy_static = "1.4.0"

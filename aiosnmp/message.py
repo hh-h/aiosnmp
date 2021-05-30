@@ -16,7 +16,8 @@ import ipaddress
 import random
 from typing import List, Optional, Union
 
-from .asn1 import Class, Decoder, Encoder, Number
+from .asn1 import Class, Number
+from .asn1_rust import Decoder, Encoder
 
 
 class SnmpVersion(enum.IntEnum):

@@ -1,2 +1,2 @@
-tox==3.14.3
-tox-docker==1.2.1
+tox==3.23.1
+tox-docker==3.0.0

@@ -1,10 +1,11 @@
 import ipaddress
+import itertools
 from typing import Any, Optional, Tuple, Type
 
 import pytest
 
-import aiosnmp.asn1 as asn1
-from aiosnmp.asn1 import TClass, TNumber, TType
+from aiosnmp import asn1
+from aiosnmp.asn1_rust import Decoder, Encoder, Error
 
 
 class TestEncoder:
@@ -74,9 +75,10 @@ class TestEncoder:
             # enumerated
             (1, asn1.Number.Enumerated, b"\x0a\x01\x01"),
         ],
+        ids=itertools.count(),  # fix for windows ValueError: the environment variable is longer than 32767 characters
     )
-    def test_simple_encode(self, value: Any, number: Optional[TNumber], expected: bytes) -> None:
-        encoder = asn1.Encoder()
+    def test_simple_encode(self, value: Any, number: Optional[asn1.TNumber], expected: bytes) -> None:
+        encoder = Encoder()
         encoder.write(value, number)
         result = encoder.output()
         assert result == expected
@@ -93,8 +95,8 @@ class TestEncoder:
             (1, asn1.Class.Private, (1,), b"\xe1\x03\x02\x01\x01"),
         ],
     )
-    def test_one_enter(self, number: TNumber, typ: TType, values: Tuple, expected: bytes) -> None:
-        encoder = asn1.Encoder()
+    def test_one_enter(self, number: asn1.TNumber, typ: asn1.TType, values: Tuple, expected: bytes) -> None:
+        encoder = Encoder()
         encoder.enter(number, typ)
         for value in values:
             encoder.write(value)
@@ -125,8 +127,10 @@ class TestEncoder:
             ),
         ],
     )
-    def test_multiple_enter(self, values: Tuple[Tuple[TNumber, Optional[TClass], Tuple]], expected: bytes) -> None:
-        encoder = asn1.Encoder()
+    def test_multiple_enter(
+        self, values: Tuple[Tuple[asn1.TNumber, Optional[asn1.TClass], Tuple]], expected: bytes
+    ) -> None:
+        encoder = Encoder()
         for number, typ, values_ in values:
             encoder.enter(number, typ)
             for value in values_:
@@ -137,9 +141,9 @@ class TestEncoder:
         assert res == expected
 
     def test_error_stack(self) -> None:
-        encoder = asn1.Encoder()
+        encoder = Encoder()
         encoder.enter(asn1.Number.Sequence)
-        with pytest.raises(asn1.Error, match="Stack is not empty."):
+        with pytest.raises(Error, match="Stack is not empty."):
             encoder.output()
 
     @pytest.mark.parametrize(
@@ -147,23 +151,23 @@ class TestEncoder:
         ["1", "40.2.3", "1.40.3", "1.2.3.", ".1.2.3", "foo", "foo.bar"],
     )
     def test_error_object_identifier(self, value: str) -> None:
-        encoder = asn1.Encoder()
-        with pytest.raises(asn1.Error, match="Illegal object identifier"):
+        encoder = Encoder()
+        with pytest.raises(Error, match="Illegal object identifier"):
             encoder.write(value, asn1.Number.ObjectIdentifier)
 
     def test_exit_errors(self) -> None:
-        encoder = asn1.Encoder()
-        with pytest.raises(asn1.Error, match="Tag stack is empty."):
+        encoder = Encoder()
+        with pytest.raises(Error, match="Tag stack is empty."):
             encoder.exit()
 
     def test_cannot_determine_number(self) -> None:
-        encoder = asn1.Encoder()
-        with pytest.raises(asn1.Error, match="Cannot determine Number for value type <class 'float'>"):
+        encoder = Encoder()
+        with pytest.raises(Error, match="Cannot determine Number for value type"):
             encoder.write(1.21)
 
     def test_invalid_number(self) -> None:
-        encoder = asn1.Encoder()
-        with pytest.raises(asn1.Error, match="Unhandled Number 155 value 1"):
+        encoder = Encoder()
+        with pytest.raises(Error, match="Unhandled Number 155 value 1"):
             encoder.write(1, 155)
 
 
@@ -280,11 +284,12 @@ class TestDecoder:
                 ipaddress.IPv4Address("127.0.0.1"),
             ),
         ],
+        ids=itertools.count(),  # fix for windows ValueError: the environment variable is longer than 32767 characters
     )
     def test_simple_decode(
-        self, buffer: bytes, instance: Type, number: TNumber, typ: TType, cls: TClass, expected: Any
+        self, buffer: bytes, instance: Type, number: asn1.TNumber, typ: asn1.TType, cls: asn1.TClass, expected: Any
     ) -> None:
-        decoder = asn1.Decoder(buffer)
+        decoder = Decoder(buffer)
         tag = decoder.peek()
         assert tag.number == number
         assert tag.typ == typ
@@ -353,8 +358,10 @@ class TestDecoder:
             ),
         ],
     )
-    def test_one_enter(self, buffer: bytes, number: TNumber, typ: TType, cls: TClass, expected_values: Tuple) -> None:
-        decoder = asn1.Decoder(buffer)
+    def test_one_enter(
+        self, buffer: bytes, number: asn1.TNumber, typ: asn1.TType, cls: asn1.TClass, expected_values: Tuple
+    ) -> None:
+        decoder = Decoder(buffer)
         tag = decoder.peek()
         assert tag.number == number
         assert tag.typ == typ
@@ -393,7 +400,7 @@ class TestDecoder:
         ],
     )
     def test_multiple_enter(self, buffer: bytes, expected_values: Tuple[Tuple]) -> None:
-        decoder = asn1.Decoder(buffer)
+        decoder = Decoder(buffer)
 
         for expected in expected_values:
             decoder.enter()
@@ -413,7 +420,7 @@ class TestDecoder:
         ],
     )
     def test_read_multiple(self, buffer: bytes, expected_values: Tuple[Any]) -> None:
-        decoder = asn1.Decoder(buffer)
+        decoder = Decoder(buffer)
         for expected in expected_values:
             _, value = decoder.read()
             assert value == expected
@@ -429,8 +436,8 @@ class TestDecoder:
         ],
     )
     def test_peek_errors(self, buffer: bytes, error: str) -> None:
-        decoder = asn1.Decoder(buffer)
-        with pytest.raises(asn1.Error, match=error):
+        decoder = Decoder(buffer)
+        with pytest.raises(Error, match=error):
             decoder.peek()
 
     @pytest.mark.parametrize(
@@ -447,28 +454,28 @@ class TestDecoder:
         ],
     )
     def test_read_errors(self, buffer: bytes, error: str) -> None:
-        decoder = asn1.Decoder(buffer)
-        with pytest.raises(asn1.Error, match=error):
+        decoder = Decoder(buffer)
+        with pytest.raises(Error, match=error):
             decoder.read()
 
     def test_cannot_enter(self) -> None:
-        decoder = asn1.Decoder(b"\x01\x01\xff")
-        with pytest.raises(asn1.Error, match="Cannot enter a non-constructed tag."):
+        decoder = Decoder(b"\x01\x01\xff")
+        with pytest.raises(Error, match="Cannot enter a non-constructed tag."):
             decoder.enter()
 
     def test_premature_exit(self) -> None:
-        decoder = asn1.Decoder(b"\x01\x01\xff")
-        with pytest.raises(asn1.Error, match="Tag stack is empty."):
+        decoder = Decoder(b"\x01\x01\xff")
+        with pytest.raises(Error, match="Tag stack is empty."):
             decoder.exit()
 
     def test_big_boolean(self) -> None:
-        decoder = asn1.Decoder(b"\x01\x02\xff\x00")
-        with pytest.raises(asn1.Error, match="ASN1 syntax error"):
+        decoder = Decoder(b"\x01\x02\xff\x00")
+        with pytest.raises(Error, match="ASN1 syntax error"):
             decoder.read()
 
     def test_not_null_null(self) -> None:
-        decoder = asn1.Decoder(b"\x05\x01\x01")
-        with pytest.raises(asn1.Error, match="ASN1 syntax error"):
+        decoder = Decoder(b"\x05\x01\x01")
+        with pytest.raises(Error, match="ASN1 syntax error"):
             decoder.read()
 
 
@@ -503,11 +510,11 @@ class TestEncoderDecoder:
             (ipaddress.IPv4Address("8.8.8.8"), None),
         ],
     )
-    def test_simple(self, value: Any, number: Optional[TNumber]) -> None:
-        encoder = asn1.Encoder()
+    def test_simple(self, value: Any, number: Optional[asn1.TNumber]) -> None:
+        encoder = Encoder()
         encoder.write(value, number)
         data = encoder.output()
-        decoder = asn1.Decoder(data)
+        decoder = Decoder(data)
         _, decoded = decoder.read()
         assert decoded == value
         assert decoder.eof()
