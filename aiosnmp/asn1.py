@@ -208,7 +208,6 @@ class Encoder:
 
     def _emit_length_short(self, length: int) -> None:
         """Emit the short length form (< 128 octets)."""
-        assert length < 128
         self._emit(bytes([length]))
 
     def _emit_length_long(self, length: int) -> None:
@@ -219,7 +218,6 @@ class Encoder:
             length >>= 8
         values.reverse()
         # really for correctness as this should not happen anytime soon
-        assert len(values) < 127
         head = bytes([0x80 | len(values)])
         self._emit(head)
         for val in values:
@@ -227,7 +225,6 @@ class Encoder:
 
     def _emit(self, s: bytes) -> None:
         """Emit raw bytes."""
-        assert isinstance(s, bytes)
         self.m_stack[-1].append(s)
 
     def _encode_value(self, number: TNumber, value: Any) -> bytes:
@@ -274,8 +271,9 @@ class Encoder:
                 values[i] += 1
                 if values[i] <= 0xFF:
                     break
-                assert i != len(values) - 1
+
                 values[i] = 0x00
+
         if negative and values[len(values) - 1] == 0x7F:  # Two's complement corner case
             values.append(0xFF)
         values.reverse()
@@ -285,7 +283,6 @@ class Encoder:
     def _encode_octet_string(value: Union[str, bytes]) -> bytes:
         """Encode an octet string."""
         # Use the primitive encoding
-        assert isinstance(value, str) or isinstance(value, bytes)
         if isinstance(value, str):
             value = value.encode("utf-8")
         return value
@@ -293,7 +290,7 @@ class Encoder:
     @staticmethod
     def _encode_null() -> bytes:
         """Encode a Null value."""
-        return bytes(b"")
+        return b""
 
     _re_oid = re.compile(r"^[0-9]+(\.[0-9]+)+$")
 
@@ -439,12 +436,9 @@ class Decoder:
             length = 0
             for byte in bytes_data:
                 length = (length << 8) | int(byte)
-            try:
-                length = int(length)
-            except OverflowError:
-                pass
         else:
             length = byte
+
         return length
 
     def _read_value(self, number: TNumber, length: int) -> Any:
@@ -499,7 +493,6 @@ class Decoder:
     def _end_of_input(self) -> bool:
         """Return True if we are at the end of input."""
         index, input_data = self.m_stack[-1]
-        assert not index > len(input_data)
         return cast(int, index) == len(input_data)
 
     @staticmethod
@@ -520,17 +513,13 @@ class Decoder:
                 values[i] += 1
                 if values[i] <= 0xFF:
                     break
-                assert i > 0
+
                 values[i] = 0x00
         value = 0
         for val in values:
             value = (value << 8) | val
         if negative:
             value = -value
-        try:
-            value = int(value)
-        except OverflowError:
-            pass
         return value
 
     @staticmethod

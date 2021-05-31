@@ -151,6 +151,21 @@ class TestEncoder:
         with pytest.raises(asn1.Error, match="Illegal object identifier"):
             encoder.write(value, asn1.Number.ObjectIdentifier)
 
+    def test_exit_errors(self) -> None:
+        encoder = asn1.Encoder()
+        with pytest.raises(asn1.Error, match="Tag stack is empty."):
+            encoder.exit()
+
+    def test_cannot_determine_number(self) -> None:
+        encoder = asn1.Encoder()
+        with pytest.raises(asn1.Error, match="Cannot determine Number for value type <class 'float'>"):
+            encoder.write(1.21)
+
+    def test_invalid_number(self) -> None:
+        encoder = asn1.Encoder()
+        with pytest.raises(asn1.Error, match="Unhandled Number 155 value 1"):
+            encoder.write(1, 155)
+
 
 class TestDecoder:
     @pytest.mark.parametrize(
@@ -421,6 +436,7 @@ class TestDecoder:
     @pytest.mark.parametrize(
         ("buffer", "error"),
         [
+            (b"", "Input is empty."),
             (b"\x02", "Premature end of input."),
             (b"\x04\x82\xff", "Premature end of input."),
             (b"\x04\xff" + b"\xff" * 0x7F, "ASN1 syntax error"),
@@ -433,6 +449,26 @@ class TestDecoder:
     def test_read_errors(self, buffer: bytes, error: str) -> None:
         decoder = asn1.Decoder(buffer)
         with pytest.raises(asn1.Error, match=error):
+            decoder.read()
+
+    def test_cannot_enter(self) -> None:
+        decoder = asn1.Decoder(b"\x01\x01\xff")
+        with pytest.raises(asn1.Error, match="Cannot enter a non-constructed tag."):
+            decoder.enter()
+
+    def test_premature_exit(self) -> None:
+        decoder = asn1.Decoder(b"\x01\x01\xff")
+        with pytest.raises(asn1.Error, match="Tag stack is empty."):
+            decoder.exit()
+
+    def test_big_boolean(self) -> None:
+        decoder = asn1.Decoder(b"\x01\x02\xff\x00")
+        with pytest.raises(asn1.Error, match="ASN1 syntax error"):
+            decoder.read()
+
+    def test_not_null_null(self) -> None:
+        decoder = asn1.Decoder(b"\x05\x01\x01")
+        with pytest.raises(asn1.Error, match="ASN1 syntax error"):
             decoder.read()
 
 
