@@ -61,9 +61,10 @@ class SnmpVarbind:
         return self._value
 
     def encode(self, encoder: Encoder) -> None:
-        with encoder.enter(Number.Sequence):
-            encoder.write(self._oid, Number.ObjectIdentifier)
-            encoder.write(self.value)
+        encoder.enter(Number.Sequence)
+        encoder.write(self._oid, Number.ObjectIdentifier)
+        encoder.write(self.value)
+        encoder.exit()
 
 
 class PDU:
@@ -78,14 +79,17 @@ class PDU:
         self.varbinds: List[SnmpVarbind] = varbinds
 
     def encode(self, encoder: Encoder) -> None:
-        with encoder.enter(self._PDUType, Class.Context):
-            encoder.write(self.request_id, Number.Integer)
-            encoder.write(self.error_status, Number.Integer)
-            encoder.write(self.error_index, Number.Integer)
+        encoder.enter(self._PDUType, Class.Context)
+        encoder.write(self.request_id, Number.Integer)
+        encoder.write(self.error_status, Number.Integer)
+        encoder.write(self.error_index, Number.Integer)
 
-            with encoder.enter(Number.Sequence):
-                for varbind in self.varbinds:
-                    varbind.encode(encoder)
+        encoder.enter(Number.Sequence)
+        for varbind in self.varbinds:
+            varbind.encode(encoder)
+        encoder.exit()
+
+        encoder.exit()
 
 
 class BulkPDU:
@@ -100,14 +104,17 @@ class BulkPDU:
         self.varbinds: List[SnmpVarbind] = varbinds
 
     def encode(self, encoder: Encoder) -> None:
-        with encoder.enter(self._PDUType, Class.Context):
-            encoder.write(self.request_id, Number.Integer)
-            encoder.write(self.non_repeaters, Number.Integer)
-            encoder.write(self.max_repetitions, Number.Integer)
+        encoder.enter(self._PDUType, Class.Context)
+        encoder.write(self.request_id, Number.Integer)
+        encoder.write(self.non_repeaters, Number.Integer)
+        encoder.write(self.max_repetitions, Number.Integer)
 
-            with encoder.enter(Number.Sequence):
-                for varbind in self.varbinds:
-                    varbind.encode(encoder)
+        encoder.enter(Number.Sequence)
+        for varbind in self.varbinds:
+            varbind.encode(encoder)
+        encoder.exit()
+
+        encoder.exit()
 
 
 class GetRequest(PDU):
@@ -147,10 +154,11 @@ class SnmpMessage:
 
     def encode(self) -> bytes:
         encoder = Encoder()
-        with encoder.enter(Number.Sequence):
-            encoder.write(self.version, Number.Integer)
-            encoder.write(self.community, Number.OctetString)
-            self.data.encode(encoder)
+        encoder.enter(Number.Sequence)
+        encoder.write(self.version, Number.Integer)
+        encoder.write(self.community, Number.OctetString)
+        self.data.encode(encoder)
+        encoder.exit()
         return encoder.output()
 
 
@@ -158,31 +166,39 @@ class SnmpResponse(SnmpMessage):
     @classmethod
     def decode(cls, data: bytes) -> "SnmpResponse":
         decoder = Decoder(data)
-        with decoder.enter():
-            tag, value = decoder.read()
-            version = SnmpVersion(value)
+        decoder.enter()  # 1
+        tag, value = decoder.read()
+        version = SnmpVersion(value)
 
-            tag, value = decoder.read()
-            community = value.decode()
+        tag, value = decoder.read()
+        community = value.decode()
 
-            with decoder.enter():
-                tag, value = decoder.read()
-                request_id = value
+        decoder.enter()  # 2
+        tag, value = decoder.read()
+        request_id = value
 
-                tag, value = decoder.read()
-                error_status = value
+        tag, value = decoder.read()
+        error_status = value
 
-                tag, value = decoder.read()
-                error_index = value
+        tag, value = decoder.read()
+        error_index = value
 
-                with decoder.enter():
-                    varbinds: List[SnmpVarbind] = []
-                    while not decoder.eof():
-                        with decoder.enter():
-                            _, value = decoder.read()
-                            oid = value
-                            _, value = decoder.read()
-                            varbinds.append(SnmpVarbind(oid, value))
+        decoder.enter()  # 3
+        varbinds: List[SnmpVarbind] = []
+        while not decoder.eof():
+            decoder.enter()  # 4
+            _, value = decoder.read()
+            oid = value
+            _, value = decoder.read()
+            varbinds.append(SnmpVarbind(oid, value))
+            decoder.exit()  # 4
+
+        decoder.exit()  # 3
+
+        decoder.exit()  # 2
+
+        decoder.exit()  # 1
+
         response = GetResponse(varbinds)
         response.request_id = request_id
         response.error_status = error_status
@@ -216,37 +232,45 @@ class SnmpV2TrapMessage:
     @classmethod
     def decode(cls, data: bytes) -> Optional["SnmpV2TrapMessage"]:
         decoder = Decoder(data)
-        with decoder.enter():
-            tag, value = decoder.read()
-            version = SnmpVersion(value)
-            if version != SnmpVersion.v2c:
-                return None
+        decoder.enter()  # 1
+        tag, value = decoder.read()
+        version = SnmpVersion(value)
+        if version != SnmpVersion.v2c:
+            return None
 
-            tag, value = decoder.read()
-            community = value.decode()
+        tag, value = decoder.read()
+        community = value.decode()
 
-            tag = decoder.peek()
-            if tag.cls != Class.Context or tag.nr != PDUType.SNMPv2Trap:
-                return None
+        tag = decoder.peek()
+        if tag.cls != Class.Context or tag.number != PDUType.SNMPv2Trap:
+            return None
 
-            with decoder.enter():
-                tag, value = decoder.read()
-                request_id = value
+        decoder.enter()  # 2
+        tag, value = decoder.read()
+        request_id = value
 
-                tag, value = decoder.read()
-                error_status = value
+        tag, value = decoder.read()
+        error_status = value
 
-                tag, value = decoder.read()
-                error_index = value
+        tag, value = decoder.read()
+        error_index = value
 
-                with decoder.enter():
-                    varbinds: List[SnmpVarbind] = []
-                    while not decoder.eof():
-                        with decoder.enter():
-                            _, value = decoder.read()
-                            oid = value
-                            _, value = decoder.read()
-                            varbinds.append(SnmpVarbind(oid, value))
+        decoder.enter()  # 3
+        varbinds: List[SnmpVarbind] = []
+        while not decoder.eof():
+            decoder.enter()  # 4
+            _, value = decoder.read()
+            oid = value
+            _, value = decoder.read()
+            varbinds.append(SnmpVarbind(oid, value))
+            decoder.exit()  # 4
+
+        decoder.exit()  # 3
+
+        decoder.exit()  # 2
+
+        decoder.exit()  # 1
+
         response = SnmpV2Trap(varbinds)
         response.request_id = request_id
         response.error_status = error_status

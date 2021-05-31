@@ -7,8 +7,7 @@
 import enum
 import ipaddress
 import re
-from contextlib import contextmanager
-from typing import Any, Iterator, List, NamedTuple, Optional, Tuple, Union, cast
+from typing import Any, List, NamedTuple, Optional, Tuple, Union, cast
 
 
 class Number(enum.IntEnum):
@@ -62,7 +61,7 @@ TClass = Union[Class, int]
 
 
 class Tag(NamedTuple):
-    nr: TNumber
+    number: TNumber
     typ: TType
     cls: TClass
 
@@ -77,12 +76,11 @@ class Encoder:
     def __init__(self) -> None:
         self.m_stack: List[List[bytes]] = [[]]
 
-    @contextmanager
-    def enter(self, nr: TNumber, cls: Optional[TClass] = None) -> Iterator[None]:
+    def enter(self, number: TNumber, cls: Optional[TClass] = None) -> None:
         """This method starts the construction of a constructed type.
 
         Args:
-            nr (int): The desired ASN.1 type. Use ``Number`` enumeration.
+            number (int): The desired ASN.1 type. Use ``Number`` enumeration.
 
             cls (int): This optional parameter specifies the class
                 of the constructed type. The default class to use is the
@@ -96,11 +94,10 @@ class Encoder:
         """
         if cls is None:
             cls = Class.Universal
-        self._emit_tag(nr, Type.Constructed, cls)
+        self._emit_tag(number, Type.Constructed, cls)
         self.m_stack.append([])
 
-        yield
-
+    def exit(self) -> None:
         if len(self.m_stack) == 1:
             raise Error("Tag stack is empty.")
         value = b"".join(self.m_stack[-1])
@@ -111,7 +108,7 @@ class Encoder:
     def write(
         self,
         value: Any,
-        nr: Optional[TNumber] = None,
+        number: Optional[TNumber] = None,
         typ: Optional[TType] = None,
         cls: Optional[TClass] = None,
     ) -> None:
@@ -128,8 +125,8 @@ class Encoder:
                 try to autodetect the correct ASN.1 type from the type of
                 ``value``.
 
-            nr (int): If the desired ASN.1 type cannot be autodetected or is
-                autodetected wrongly, the ``nr`` parameter can be provided to
+            number (int): If the desired ASN.1 type cannot be autodetected or is
+                autodetected wrongly, the ``number`` parameter can be provided to
                 specify the ASN.1 type to be used. Use ``Number`` enumeration.
 
             typ (int): This optional parameter can be used to write constructed
@@ -150,23 +147,25 @@ class Encoder:
         Raises:
             `Error`
         """
-        if nr is None:
-            if isinstance(value, int):
-                nr = Number.Integer
+        if number is None:
+            if isinstance(value, bool):
+                number = Number.Boolean
+            elif isinstance(value, int):
+                number = Number.Integer
             elif isinstance(value, str) or isinstance(value, bytes):
-                nr = Number.OctetString
+                number = Number.OctetString
             elif value is None:
-                nr = Number.Null
+                number = Number.Null
             elif isinstance(value, ipaddress.IPv4Address):
-                nr = Number.IPAddress
+                number = Number.IPAddress
             else:
                 raise Error(f"Cannot determine Number for value type {type(value)}")
         if typ is None:
             typ = Type.Primitive
         if cls is None:
             cls = Class.Universal
-        value = self._encode_value(nr, value)
-        self._emit_tag(nr, typ, cls)
+        value = self._encode_value(number, value)
+        self._emit_tag(number, typ, cls)
         self._emit_length(len(value))
         self._emit(value)
 
@@ -192,13 +191,13 @@ class Encoder:
         output = b"".join(self.m_stack[0])
         return output
 
-    def _emit_tag(self, nr: TNumber, typ: TType, cls: TClass) -> None:
+    def _emit_tag(self, number: TNumber, typ: TType, cls: TClass) -> None:
         """Emit a tag."""
-        self._emit_tag_short(nr, typ, cls)
+        self._emit_tag_short(number, typ, cls)
 
-    def _emit_tag_short(self, nr: TNumber, typ: TType, cls: TClass) -> None:
+    def _emit_tag_short(self, number: TNumber, typ: TType, cls: TClass) -> None:
         """Emit a short tag."""
-        self._emit(bytes([nr | typ | cls]))
+        self._emit(bytes([number | typ | cls]))
 
     def _emit_length(self, length: int) -> None:
         """Emit length octets."""
@@ -209,7 +208,6 @@ class Encoder:
 
     def _emit_length_short(self, length: int) -> None:
         """Emit the short length form (< 128 octets)."""
-        assert length < 128
         self._emit(bytes([length]))
 
     def _emit_length_long(self, length: int) -> None:
@@ -220,7 +218,6 @@ class Encoder:
             length >>= 8
         values.reverse()
         # really for correctness as this should not happen anytime soon
-        assert len(values) < 127
         head = bytes([0x80 | len(values)])
         self._emit(head)
         for val in values:
@@ -228,24 +225,23 @@ class Encoder:
 
     def _emit(self, s: bytes) -> None:
         """Emit raw bytes."""
-        assert isinstance(s, bytes)
         self.m_stack[-1].append(s)
 
-    def _encode_value(self, nr: TNumber, value: Any) -> bytes:
+    def _encode_value(self, number: TNumber, value: Any) -> bytes:
         """Encode a value."""
-        if nr in (Number.Integer, Number.Enumerated):
+        if number in (Number.Integer, Number.Enumerated):
             return self._encode_integer(value)
-        elif nr in (Number.OctetString, Number.PrintableString):
+        elif number in (Number.OctetString, Number.PrintableString):
             return self._encode_octet_string(value)
-        elif nr == Number.Boolean:
+        elif number == Number.Boolean:
             return self._encode_boolean(value)
-        elif nr == Number.Null:
+        elif number == Number.Null:
             return self._encode_null()
-        elif nr == Number.ObjectIdentifier:
+        elif number == Number.ObjectIdentifier:
             return self._encode_object_identifier(value)
-        elif nr == Number.IPAddress:
+        elif number == Number.IPAddress:
             return self._encode_ipaddress(value)
-        raise Error(f"Unhandled Number {nr} value {value}")
+        raise Error(f"Unhandled Number {number} value {value}")
 
     @staticmethod
     def _encode_boolean(value: bool) -> bytes:
@@ -275,8 +271,9 @@ class Encoder:
                 values[i] += 1
                 if values[i] <= 0xFF:
                     break
-                assert i != len(values) - 1
+
                 values[i] = 0x00
+
         if negative and values[len(values) - 1] == 0x7F:  # Two's complement corner case
             values.append(0xFF)
         values.reverse()
@@ -286,7 +283,6 @@ class Encoder:
     def _encode_octet_string(value: Union[str, bytes]) -> bytes:
         """Encode an octet string."""
         # Use the primitive encoding
-        assert isinstance(value, str) or isinstance(value, bytes)
         if isinstance(value, str):
             value = value.encode("utf-8")
         return value
@@ -294,7 +290,7 @@ class Encoder:
     @staticmethod
     def _encode_null() -> bytes:
         """Encode a Null value."""
-        return bytes(b"")
+        return b""
 
     _re_oid = re.compile(r"^[0-9]+(\.[0-9]+)+$")
 
@@ -357,9 +353,9 @@ class Decoder:
             self.m_tag = self._read_tag()
         return self.m_tag
 
-    def read(self, nr: Optional[TNumber] = None) -> Tuple[Tag, Any]:
+    def read(self, number: Optional[TNumber] = None) -> Tuple[Tag, Any]:
         """This method decodes one ASN.1 tag from the input and returns it as a
-        ``(tag, value)`` tuple. ``tag`` is a 3-tuple ``(nr, typ, cls)``,
+        ``(tag, value)`` tuple. ``tag`` is a 3-tuple ``(number, typ, cls)``,
         while ``value`` is a Python object representing the ASN.1 value.
         The offset in the input is increased so that the next `Decoder.read()`
         call will return the next tag. In case no more data is available from
@@ -375,9 +371,9 @@ class Decoder:
             raise Error("Input is empty.")
         tag = self.peek()
         length = self._read_length()
-        if nr is None:
-            nr = tag.nr | tag.cls
-        value = self._read_value(nr, length)
+        if number is None:
+            number = tag.number | tag.cls
+        value = self._read_value(number, length)
         self.m_tag = None
         return tag, value
 
@@ -389,8 +385,7 @@ class Decoder:
         """
         return self._end_of_input()
 
-    @contextmanager
-    def enter(self) -> Iterator[None]:
+    def enter(self) -> None:
         """This method enters the constructed type that is at the current
         decoding offset.
 
@@ -409,8 +404,7 @@ class Decoder:
         self.m_stack.append([0, bytes_data])
         self.m_tag = None
 
-        yield
-
+    def exit(self) -> None:
         if len(self.m_stack) == 1:
             raise Error("Tag stack is empty.")
         del self.m_stack[-1]
@@ -421,15 +415,15 @@ class Decoder:
         byte = self._read_byte()
         cls = byte & 0xC0
         typ = byte & 0x20
-        nr = byte & 0x1F
-        if nr == 0x1F:  # Long form of tag encoding
-            nr = 0
+        number = byte & 0x1F
+        if number == 0x1F:  # Long form of tag encoding
+            number = 0
             while True:
                 byte = self._read_byte()
-                nr = (nr << 7) | (byte & 0x7F)
+                number = (number << 7) | (byte & 0x7F)
                 if not byte & 0x80:
                     break
-        return Tag(nr=nr, typ=typ, cls=cls)
+        return Tag(number=number, typ=typ, cls=cls)
 
     def _read_length(self) -> int:
         """Read a length from the input."""
@@ -442,20 +436,17 @@ class Decoder:
             length = 0
             for byte in bytes_data:
                 length = (length << 8) | int(byte)
-            try:
-                length = int(length)
-            except OverflowError:
-                pass
         else:
             length = byte
+
         return length
 
-    def _read_value(self, nr: TNumber, length: int) -> Any:
+    def _read_value(self, number: TNumber, length: int) -> Any:
         """Read a value from the input."""
         bytes_data = self._read_bytes(length)
-        if nr == Number.Boolean:
+        if number == Number.Boolean:
             return self._decode_boolean(bytes_data)
-        elif nr in (
+        elif number in (
             Number.Integer,
             Number.Enumerated,
             Number.TimeTicks,
@@ -465,17 +456,17 @@ class Decoder:
             Number.Uinteger32,
         ):
             return self._decode_integer(bytes_data)
-        elif nr == Number.OctetString:
+        elif number == Number.OctetString:
             return self._decode_octet_string(bytes_data)
-        elif nr == Number.Null:
+        elif number == Number.Null:
             return self._decode_null(bytes_data)
-        elif nr == Number.ObjectIdentifier:
+        elif number == Number.ObjectIdentifier:
             return self._decode_object_identifier(bytes_data)
-        elif nr in (Number.PrintableString, Number.IA5String, Number.UTCTime):
+        elif number in (Number.PrintableString, Number.IA5String, Number.UTCTime):
             return self._decode_printable_string(bytes_data)
-        elif nr in (Number.EndOfMibView, Number.NoSuchObject, Number.NoSuchInstance):
+        elif number in (Number.EndOfMibView, Number.NoSuchObject, Number.NoSuchInstance):
             return None
-        elif nr == Number.IPAddress:
+        elif number == Number.IPAddress:
             return self._decode_ip_address(bytes_data)
         return bytes_data
 
@@ -502,7 +493,6 @@ class Decoder:
     def _end_of_input(self) -> bool:
         """Return True if we are at the end of input."""
         index, input_data = self.m_stack[-1]
-        assert not index > len(input_data)
         return cast(int, index) == len(input_data)
 
     @staticmethod
@@ -523,17 +513,13 @@ class Decoder:
                 values[i] += 1
                 if values[i] <= 0xFF:
                     break
-                assert i > 0
+
                 values[i] = 0x00
         value = 0
         for val in values:
             value = (value << 8) | val
         if negative:
             value = -value
-        try:
-            value = int(value)
-        except OverflowError:
-            pass
         return value
 
     @staticmethod
