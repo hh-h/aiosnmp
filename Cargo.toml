@@ -1,6 +1,6 @@
 [package]
 name = "aiosnmp"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["Konstantin Valetov <forjob@thetrue.name>"]
 edition = "2018"
 

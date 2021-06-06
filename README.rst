@@ -34,6 +34,13 @@ aiosnmp
 
 aiosnmp is an asynchronous SNMP client for use with asyncio.
 
+Notice on 0.6.0 build
+---------------------
+
+| If you have some problems with 0.6.0 build, please, create an issue and downgrade to 0.5.0.
+| There is no difference between 0.5.0 and 0.6.0 only asn1 parser migrated to rust.
+
+
 Installation
 ------------
 
