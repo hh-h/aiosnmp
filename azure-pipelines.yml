@@ -38,6 +38,12 @@ jobs:
       - script: mypy aiosnmp/
         displayName: 'Run mypy'
 
+      - script: cargo fmt -- --check
+        displayName: 'Run rustfmt'
+
+      - script: cargo clippy --all-targets --all-features -- -D warnings
+        displayName: 'Run clippy'
+
   - job: macos
     dependsOn:
       - check
