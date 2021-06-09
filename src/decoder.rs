@@ -164,8 +164,7 @@ impl Decoder {
 
     fn end_of_input(&mut self) -> bool {
         let data = self.m_stack.last().unwrap();
-        let eof = data.0 == data.1.len();
-        eof
+        data.0 == data.1.len()
     }
 
     fn decode_boolean(data: Vec<u8>) -> PyResult<bool> {
@@ -204,7 +203,7 @@ impl Decoder {
     }
 
     fn decode_null(data: Vec<u8>) -> PyResult<()> {
-        if data.len() > 0 {
+        if !data.is_empty() {
             return Err(Error::new_err("ASN1 syntax error"));
         }
 
@@ -226,7 +225,7 @@ impl Decoder {
             }
         }
 
-        if result.len() == 0 || result[0] > 1599 {
+        if result.is_empty() || result[0] > 1599 {
             return Err(Error::new_err("ASN1 syntax error"));
         }
 
