@@ -51,7 +51,7 @@ jobs:
       vmImage: 'macOS-10.15'
 
     variables:
-      CIBW_BUILD: cp3[789]*
+      CIBW_BUILD: cp3{7,8,9,10}-*
       CIBW_TEST_REQUIRES: pytest==6.2.4
       CIBW_TEST_COMMAND: pytest $(Build.SourcesDirectory)/tests/test_asn1.py
 
@@ -79,7 +79,7 @@ jobs:
     pool:
       vmImage: 'Ubuntu-20.04'
     variables:
-      CIBW_BUILD: cp3[789]*
+      CIBW_BUILD: cp3{7,8,9,10}-*
       CIBW_SKIP: "*_i686"
       CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
       CIBW_BEFORE_ALL: curl https://sh.rustup.rs -sSf | sh -s -- -y
@@ -111,7 +111,7 @@ jobs:
     pool:
       vmImage: 'vs2017-win2016'
     variables:
-      CIBW_BUILD: cp3[789]*
+      CIBW_BUILD: cp3{7,8,9,10}-*
       CIBW_SKIP: "*-win32"
       CIBW_TEST_REQUIRES: pytest==6.2.4
       CIBW_TEST_COMMAND: pytest $(Build.SourcesDirectory)\\tests\\test_asn1.py
@@ -181,6 +181,12 @@ jobs:
           loop: 'asyncio'
         Python39-uvloop:
           python.version: '3.9'
+          loop: 'uvloop'
+        Python310-asyncio:
+          python.version: '3.10'
+          loop: 'asyncio'
+        Python310-uvloop:
+          python.version: '3.10'
           loop: 'uvloop'
 
     steps:
