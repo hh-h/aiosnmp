@@ -61,7 +61,7 @@ jobs:
       - script: |
           set -o errexit
           python3 -m pip install --upgrade pip
-          python3 -m pip install cibuildwheel==2.0.0a2
+          python3 -m pip install cibuildwheel==2.3.1
         displayName: Install dependencies
 
       - script: cibuildwheel --output-dir wheelhouse .
@@ -93,7 +93,7 @@ jobs:
       - script: |
           set -o errexit
           python3 -m pip install --upgrade pip
-          pip3 install cibuildwheel==2.0.0a2
+          pip3 install cibuildwheel==2.3.1
         displayName: Install dependencies
 
       - script: cibuildwheel --output-dir wheelhouse .
@@ -122,7 +122,7 @@ jobs:
       - script: |
           set -o errexit
           python -m pip install --upgrade pip
-          pip install cibuildwheel==2.0.0a2
+          pip install cibuildwheel==2.3.1
         displayName: Install dependencies
 
       - script: cibuildwheel --output-dir wheelhouse .
