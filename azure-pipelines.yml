@@ -204,7 +204,7 @@ jobs:
       - script: pip install --find-links $(System.DefaultWorkingDirectory)/wheels aiosnmp
         displayName: 'Install aiosnmp'
 
-      - script: pip install pytest==6.2.4 pytest-asyncio==0.15.1 uvloop==0.15.2
+      - script: pip install pytest==6.2.4 pytest-asyncio==0.15.1 uvloop==0.16.0
         displayName: 'Install Dependencies'
 
       - script: pytest --durations=5 --event-loop=$(loop) tests/
@@ -228,7 +228,7 @@ jobs:
       - script: python setup.py develop
         displayName: 'Compile Rust Module'
 
-      - script: pip install pytest==6.2.4 pytest-asyncio==0.15.1 pytest-cov==2.12.0 uvloop==0.15.2 codecov==2.1.11
+      - script: pip install pytest==6.2.4 pytest-asyncio==0.15.1 pytest-cov==2.12.0 uvloop==0.16.0 codecov==2.1.11
         displayName: 'Install Test Dependencies'
 
       - script: python -m pytest --cov=aiosnmp --cov-report=term-missing tests/
