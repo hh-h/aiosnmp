@@ -58,7 +58,7 @@ impl Encoder {
                     0x05
                 } else if value.get_type().name()? == "IPv4Address" {
                     0x40
-                } else if value.get_type().name()? == "Unsigned32" {
+                } else if value.get_type().name()? == "Gauge32" {
                     0x42
                 } else {
                     return Err(Error::new_err("Cannot determine Number for value type"));

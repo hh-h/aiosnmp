@@ -1,4 +1,4 @@
-class Unsigned32:
+class Gauge32:
     def __init__(self, val: int):
         self._value = val
 

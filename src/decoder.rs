@@ -127,7 +127,8 @@ impl Decoder {
         let data = self.read_bytes(length)?;
         match number {
             0x01 => Ok(Decoder::decode_boolean(data)?.to_object(py)),
-            0x02 | 0x0A | 0x41 | 0x42 | 0x43 | 0x46 | 0x47 => Ok(Decoder::decode_integer(data).to_object(py)),
+            0x02 | 0x0A | 0x41 | 0x43 | 0x46 | 0x47 => Ok(Decoder::decode_integer(data).to_object(py)),
+            0x42 => Ok(Decoder::decode_uinteger(py, data)?.to_object(py)),
             0x04 => Ok(PyBytes::new(py, &Decoder::decode_octet_string(data)).to_object(py)),
             0x05 => Ok(Decoder::decode_null(data)?.to_object(py)),
             0x06 => Ok(Decoder::decode_object_identifier(data)?.to_object(py)),
@@ -196,6 +197,21 @@ impl Decoder {
             value = -value;
         }
         value
+    }
+
+    fn decode_uinteger(py: Python, data: Vec<u8>) -> PyResult<&PyAny> {
+        let mut bytes = data;
+
+        let mut value: u128 = 0;
+        for byte in bytes {
+            value = (value << 8) | byte as u128;
+        }
+        let pt = PyTuple::new(py, &[value]);
+        let asyncio_module = PyModule::import(py, "aiosnmp")?;
+        let asyncio_types = asyncio_module.getattr("types")?;
+        let gauge32_class = asyncio_types.getattr("Gauge32")?;
+        let gauge32_value = gauge32_class.call1( pt)?;
+        Ok(gauge32_value)
     }
 
     fn decode_octet_string(data: Vec<u8>) -> Vec<u8> {

@@ -7,7 +7,7 @@ from typing import Any, List, Optional, Tuple, Type, Union
 from .connection import SnmpConnection
 from .exceptions import SnmpUnsupportedValueType
 from .message import GetBulkRequest, GetNextRequest, GetRequest, SetRequest, SnmpMessage, SnmpVarbind, SnmpVersion
-from .types import Unsigned32
+from .types import Gauge32
 
 
 class Snmp(SnmpConnection):
@@ -163,10 +163,10 @@ class Snmp(SnmpConnection):
             varbinds.append(vbs[0])
         return varbinds
 
-    async def set(self, varbinds: List[Tuple[str, Union[int, str, bytes, ipaddress.IPv4Address]]]) -> List[SnmpVarbind]:
+    async def set(self, varbinds: List[Tuple[str, Union[int, str, bytes, ipaddress.IPv4Address, Gauge32]]]) -> List[SnmpVarbind]:
         """The set method is used to modify the value(s) of the managed object.
 
-        :param varbinds: list of tuples[oid, int/str/bytes/ipv4]
+        :param varbinds: list of tuples[oid, int/str/bytes/ipv4/Gauge32]
         :return: list of :class:`SnmpVarbind <aiosnmp.message.SnmpVarbind>`
 
         Example
@@ -182,8 +182,8 @@ class Snmp(SnmpConnection):
 
         """
         for varbind in varbinds:
-            if not isinstance(varbind[1], (int, str, bytes, ipaddress.IPv4Address, Unsigned32)):
-                raise SnmpUnsupportedValueType(f"Only int, str, bytes, ip address, and Unsigned32 supported, got {type(varbind[1])}")
+            if not isinstance(varbind[1], (int, str, bytes, ipaddress.IPv4Address, Gauge32)):
+                raise SnmpUnsupportedValueType(f"Only int, str, bytes, ip address, and Gauge32 supported, got {type(varbind[1])}")
         message = SnmpMessage(
             self.version,
             self.community,
