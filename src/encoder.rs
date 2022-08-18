@@ -58,6 +58,8 @@ impl Encoder {
                     0x05
                 } else if value.get_type().name()? == "IPv4Address" {
                     0x40
+                } else if value.get_type().name()? == "Unsigned32" {
+                    0x42
                 } else {
                     return Err(Error::new_err("Cannot determine Number for value type"));
                 }
@@ -87,6 +89,7 @@ impl Encoder {
     fn _encode_value(&self, number: u8, value: &PyAny) -> PyResult<Vec<u8>> {
         let value = match number {
             0x02 | 0x0A => Encoder::_encode_integer(value)?,
+            0x42 => Encoder::_encode_uinteger(value)?,
             0x04 | 0x13 => Encoder::_encode_octet_string(value)?,
             0x01 => Encoder::_encode_boolean(value)?,
             0x05 => Encoder::_encode_null(value),
@@ -135,6 +138,25 @@ impl Encoder {
         if negative && values[len - 1] == 0x7F {
             values.push(0xFF);
         }
+
+        values.reverse();
+        Ok(values)
+    }
+
+    fn _encode_uinteger(value: &PyAny) -> PyResult<Vec<u8>> {
+        let value = value.call_method0("get_value")?.extract::<u128>()?;
+        let (mut value, negative, limit) = {
+            (value as u128, false, 0x7F)
+        };
+
+        let mut values = Vec::new();
+        while value > limit {
+            values.push((value & 0xFF) as u8);
+            value >>= 8;
+        }
+        values.push((value & 0xFF) as u8);
+
+        let len = values.len();
 
         values.reverse();
         Ok(values)

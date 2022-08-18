@@ -18,6 +18,7 @@ from typing import List, Optional, Union
 
 from .asn1 import Class, Number
 from .asn1_rust import Decoder, Encoder
+from .types import Unsigned32
 
 
 class SnmpVersion(enum.IntEnum):
@@ -44,7 +45,7 @@ class SnmpVarbind:
     def __init__(
         self,
         oid: str,
-        value: Union[None, str, int, bytes, ipaddress.IPv4Address] = None,
+        value: Union[None, str, int, bytes, ipaddress.IPv4Address, Unsigned32] = None,
     ) -> None:
         self._oid: str = oid.lstrip(".")
         self._value: Union[None, str, int, bytes, ipaddress.IPv4Address] = value
@@ -56,7 +57,7 @@ class SnmpVarbind:
         return f".{self._oid}"
 
     @property
-    def value(self) -> Union[None, str, int, bytes, ipaddress.IPv4Address]:
+    def value(self) -> Union[None, str, int, bytes, ipaddress.IPv4Address, Unsigned32]:
         """This property stores value of the message"""
 
         return self._value

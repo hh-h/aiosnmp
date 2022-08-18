@@ -7,6 +7,7 @@ from typing import Any, List, Optional, Tuple, Type, Union
 from .connection import SnmpConnection
 from .exceptions import SnmpUnsupportedValueType
 from .message import GetBulkRequest, GetNextRequest, GetRequest, SetRequest, SnmpMessage, SnmpVarbind, SnmpVersion
+from .types import Unsigned32
 
 
 class Snmp(SnmpConnection):
@@ -181,8 +182,8 @@ class Snmp(SnmpConnection):
 
         """
         for varbind in varbinds:
-            if not isinstance(varbind[1], (int, str, bytes, ipaddress.IPv4Address)):
-                raise SnmpUnsupportedValueType(f"Only int, str, bytes and ip address supported, got {type(varbind[1])}")
+            if not isinstance(varbind[1], (int, str, bytes, ipaddress.IPv4Address, Unsigned32)):
+                raise SnmpUnsupportedValueType(f"Only int, str, bytes, ip address, and Unsigned32 supported, got {type(varbind[1])}")
         message = SnmpMessage(
             self.version,
             self.community,
