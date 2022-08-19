@@ -163,7 +163,9 @@ class Snmp(SnmpConnection):
             varbinds.append(vbs[0])
         return varbinds
 
-    async def set(self, varbinds: List[Tuple[str, Union[int, str, bytes, ipaddress.IPv4Address, Gauge32]]]) -> List[SnmpVarbind]:
+    async def set(
+        self, varbinds: List[Tuple[str, Union[int, str, bytes, ipaddress.IPv4Address, Gauge32]]]
+    ) -> List[SnmpVarbind]:
         """The set method is used to modify the value(s) of the managed object.
 
         :param varbinds: list of tuples[oid, int/str/bytes/ipv4/Gauge32]
@@ -183,7 +185,9 @@ class Snmp(SnmpConnection):
         """
         for varbind in varbinds:
             if not isinstance(varbind[1], (int, str, bytes, ipaddress.IPv4Address, Gauge32)):
-                raise SnmpUnsupportedValueType(f"Only int, str, bytes, ip address, and Gauge32 supported, got {type(varbind[1])}")
+                raise SnmpUnsupportedValueType(
+                    f"Only int, str, bytes, ip address, and Gauge32 supported, got {type(varbind[1])}"
+                )
         message = SnmpMessage(
             self.version,
             self.community,
