@@ -5,6 +5,19 @@ trigger:
 pr:
   - master
 
+variables:
+  pytest_ver: 7.1.2
+  mypy_ver: 0.971
+  isort_ver: 5.10.1
+  flake8_ver: 5.0.4
+  black_ver: 22.6.0
+  cibuildwheel_ver: 2.9.0
+  setuptools_rust_ver: 1.5.1
+  pytest_asyncio_ver: 0.19.0
+  uvloop_ver: 0.16.0
+  pytest_cov_ver: 3.0.0
+  codecov_ver: 2.1.12
+
 resources:
   containers:
   - container: snmp
@@ -23,7 +36,7 @@ jobs:
           versionSpec: '3.9'
           architecture: 'x64'
 
-      - script: pip install mypy==0.812 isort==5.8.0 flake8==3.9.2 black==21.5b1
+      - script: pip install mypy==$(mypy_ver) isort==$(isort_ver) flake8==$(flake8_ver) black==$(black_ver)
         displayName: 'Install Dependencies'
 
       - script: flake8 aiosnmp/ tests/ examples/ setup.py
@@ -52,7 +65,7 @@ jobs:
 
     variables:
       CIBW_BUILD: cp3{7,8,9,10}-*
-      CIBW_TEST_REQUIRES: pytest==6.2.4
+      CIBW_TEST_REQUIRES: pytest==$(pytest_ver)
       CIBW_TEST_COMMAND: pytest $(Build.SourcesDirectory)/tests/test_asn1.py
 
     steps:
@@ -61,7 +74,7 @@ jobs:
       - script: |
           set -o errexit
           python3 -m pip install --upgrade pip
-          python3 -m pip install cibuildwheel==2.3.1
+          python3 -m pip install cibuildwheel==$(cibuildwheel_ver)
         displayName: Install dependencies
 
       - script: cibuildwheel --output-dir wheelhouse .
@@ -84,7 +97,7 @@ jobs:
       CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
       CIBW_BEFORE_ALL: curl https://sh.rustup.rs -sSf | sh -s -- -y
       CIBW_ENVIRONMENT: 'PATH="$HOME/.cargo/bin:$PATH"'
-      CIBW_TEST_REQUIRES: pytest==6.2.4
+      CIBW_TEST_REQUIRES: pytest==$(pytest_ver)
       CIBW_TEST_COMMAND: pytest /project/tests/test_asn1.py
 
     steps:
@@ -93,7 +106,7 @@ jobs:
       - script: |
           set -o errexit
           python3 -m pip install --upgrade pip
-          pip3 install cibuildwheel==2.3.1
+          pip3 install cibuildwheel==$(cibuildwheel_ver)
         displayName: Install dependencies
 
       - script: cibuildwheel --output-dir wheelhouse .
@@ -113,7 +126,7 @@ jobs:
     variables:
       CIBW_BUILD: cp3{7,8,9,10}-*
       CIBW_SKIP: "*-win32"
-      CIBW_TEST_REQUIRES: pytest==6.2.4
+      CIBW_TEST_REQUIRES: pytest==$(pytest_ver)
       CIBW_TEST_COMMAND: pytest $(Build.SourcesDirectory)\\tests\\test_asn1.py
 
     steps:
@@ -122,7 +135,7 @@ jobs:
       - script: |
           set -o errexit
           python -m pip install --upgrade pip
-          pip install cibuildwheel==2.3.1
+          pip install cibuildwheel==$(cibuildwheel_ver)
         displayName: Install dependencies
 
       - script: cibuildwheel --output-dir wheelhouse .
@@ -146,7 +159,7 @@ jobs:
       - script: |
           set -o errexit
           python -m pip install --upgrade pip
-          pip install setuptools-rust==0.12.1
+          pip install setuptools-rust==$(setuptools_rust_ver)
         displayName: Install dependencies
 
       - script: python setup.py sdist
@@ -204,7 +217,7 @@ jobs:
       - script: pip install --find-links $(System.DefaultWorkingDirectory)/wheels aiosnmp
         displayName: 'Install aiosnmp'
 
-      - script: pip install pytest==6.2.4 pytest-asyncio==0.15.1 uvloop==0.16.0
+      - script: pip install pytest==$(pytest_ver) pytest-asyncio==$(pytest_asyncio_ver) uvloop==$(uvloop_ver)
         displayName: 'Install Dependencies'
 
       - script: pytest --durations=5 --event-loop=$(loop) tests/
@@ -222,13 +235,13 @@ jobs:
     steps:
       - task: UsePythonVersion@0
 
-      - script: pip install setuptools-rust==0.12.1
+      - script: pip install setuptools-rust==$(setuptools_rust_ver)
         displayName: 'Install Build Dependencies'
 
       - script: python setup.py develop
         displayName: 'Compile Rust Module'
 
-      - script: pip install pytest==6.2.4 pytest-asyncio==0.15.1 pytest-cov==2.12.0 uvloop==0.16.0 codecov==2.1.11
+      - script: pip install pytest==$(pytest_ver) pytest-asyncio==$(pytest_asyncio_ver) pytest-cov==$(pytest_cov_ver) uvloop==$(uvloop_ver) codecov==$(codecov_ver)
         displayName: 'Install Test Dependencies'
 
       - script: python -m pytest --cov=aiosnmp --cov-report=term-missing tests/
