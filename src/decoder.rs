@@ -7,7 +7,7 @@ use crate::Error;
 struct Data(usize, Vec<u8>);
 
 #[pyclass]
-#[text_signature = "(bytes)"]
+#[pyo3(text_signature = "(bytes)")]
 pub struct Decoder {
     m_stack: Vec<Data>,
     m_tag: Option<Tag>,
@@ -21,7 +21,7 @@ impl Decoder {
         Decoder { m_stack, m_tag: None }
     }
 
-    #[text_signature = "($self)"]
+    #[pyo3(text_signature = "($self)")]
     fn peek(&mut self) -> PyResult<Tag> {
         if self.end_of_input() {
             return Err(Error::new_err("Input is empty."));
@@ -32,7 +32,7 @@ impl Decoder {
         Ok(self.m_tag.unwrap())
     }
 
-    #[text_signature = "($self, number)"]
+    #[pyo3(text_signature = "($self, number)")]
     #[args(number = "None")]
     fn read(&mut self, py: Python, number: Option<u8>) -> PyResult<(Tag, PyObject)> {
         if self.end_of_input() {
@@ -52,12 +52,12 @@ impl Decoder {
         Ok((tag, value))
     }
 
-    #[text_signature = "($self)"]
+    #[pyo3(text_signature = "($self)")]
     fn eof(&mut self) -> bool {
         self.end_of_input()
     }
 
-    #[text_signature = "($self)"]
+    #[pyo3(text_signature = "($self)")]
     fn enter(&mut self) -> PyResult<()> {
         let tag = self.peek().unwrap();
         if tag.typ != 0x20 {
@@ -71,7 +71,7 @@ impl Decoder {
         Ok(())
     }
 
-    #[text_signature = "($self)"]
+    #[pyo3(text_signature = "($self)")]
     fn exit(&mut self) -> PyResult<()> {
         if self.m_stack.len() == 1 {
             return Err(Error::new_err("Tag stack is empty."));
@@ -246,7 +246,7 @@ impl Decoder {
         int_ip += data[3] as u32;
         let pt = PyTuple::new(py, &[int_ip]);
         let ipaddress = PyModule::import(py, "ipaddress")?;
-        let ipv4 = ipaddress.call1("IPv4Address", pt)?;
+        let ipv4 = ipaddress.getattr("IPv4Address")?.call1(pt)?;
         Ok(ipv4)
     }
 }
