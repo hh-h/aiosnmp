@@ -4,7 +4,7 @@ class Gauge32:
             raise Gauge32ValueError("rfc1902: Gauge32 is a positive int between 0 and 4294967295")
         self._value = val
 
-    def get_value(self):
+    def get_value(self) -> int:
         return self._value
 
 

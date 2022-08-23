@@ -48,7 +48,7 @@ class SnmpVarbind:
         value: Union[None, str, int, bytes, ipaddress.IPv4Address, Gauge32] = None,
     ) -> None:
         self._oid: str = oid.lstrip(".")
-        self._value: Union[None, str, int, bytes, ipaddress.IPv4Address] = value
+        self._value: Union[None, str, int, bytes, ipaddress.IPv4Address, Gauge32] = value
 
     @property
     def oid(self) -> str:
