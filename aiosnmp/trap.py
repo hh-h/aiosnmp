@@ -1,7 +1,7 @@
 __all__ = ("SnmpV2TrapServer",)
 
 import asyncio
-from typing import Callable, Iterable, Optional, Set, Tuple, cast
+from typing import Callable, Iterable, Optional, Set, Tuple
 
 from .message import SnmpV2TrapMessage
 from .protocols import SnmpTrapProtocol
@@ -36,4 +36,4 @@ class SnmpV2TrapServer:
             lambda: SnmpTrapProtocol(self.communities, self.handler),
             local_addr=(self.host, self.port),
         )
-        return transport, cast(SnmpTrapProtocol, protocol)
+        return transport, protocol
