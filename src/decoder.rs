@@ -210,7 +210,7 @@ impl Decoder {
         let asyncio_module = PyModule::import(py, "aiosnmp")?;
         let asyncio_types = asyncio_module.getattr("types")?;
         let gauge32_class = asyncio_types.getattr("Gauge32")?;
-        let gauge32_value = gauge32_class.call1( pt)?;
+        let gauge32_value = gauge32_class.call1(pt)?;
         Ok(gauge32_value)
     }
 
