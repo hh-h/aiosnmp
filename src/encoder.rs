@@ -10,7 +10,7 @@ lazy_static! {
 }
 
 #[pyclass]
-#[text_signature = "()"]
+#[pyo3(text_signature = "()")]
 pub struct Encoder {
     m_stack: Vec<Vec<u8>>,
 }
@@ -23,7 +23,7 @@ impl Encoder {
         Encoder { m_stack }
     }
 
-    #[text_signature = "($self, number, class)"]
+    #[pyo3(text_signature = "($self, number, class)")]
     #[args(class = "None")]
     fn enter(&mut self, number: u8, class: Option<u8>) {
         let class = class.unwrap_or(0x00);
@@ -48,11 +48,11 @@ impl Encoder {
         let number = match number {
             Some(number) => number,
             None => {
-                if value.is_instance::<PyBool>().unwrap() {
+                if value.is_instance_of::<PyBool>().unwrap() {
                     0x01
-                } else if value.is_instance::<PyInt>().unwrap() {
+                } else if value.is_instance_of::<PyInt>().unwrap() {
                     0x02
-                } else if value.is_instance::<PyString>().unwrap() || value.is_instance::<PyBytes>().unwrap() {
+                } else if value.is_instance_of::<PyString>().unwrap() || value.is_instance_of::<PyBytes>().unwrap() {
                     0x04
                 } else if value.is_none() {
                     0x05
@@ -163,7 +163,7 @@ impl Encoder {
     }
 
     fn _encode_octet_string(value: &PyAny) -> PyResult<Vec<u8>> {
-        if value.is_instance::<PyString>()? {
+        if value.is_instance_of::<PyString>()? {
             Ok(value.extract::<String>()?.into_bytes())
         } else {
             Ok(value.downcast::<PyBytes>()?.as_bytes().to_vec())

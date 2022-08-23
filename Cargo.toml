@@ -9,6 +9,6 @@ name = "asn1_rust"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = { version = "0.13.2", features = ["extension-module"] }
-regex = "1.5.4"
+pyo3 = { version = "0.16.5", features = ["extension-module"] }
+regex = "1.5.5"
 lazy_static = "1.4.0"

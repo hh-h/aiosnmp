@@ -56,7 +56,7 @@ class SnmpConnection:
         )
         transport, protocol = await asyncio.wait_for(connect_future, timeout=self.timeout)
 
-        self._protocol = cast(SnmpProtocol, protocol)
+        self._protocol = protocol
         self._transport = cast(asyncio.DatagramTransport, transport)
 
     @property
