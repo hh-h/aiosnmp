@@ -145,15 +145,13 @@ impl Encoder {
 
     fn _encode_uinteger(value: &PyAny) -> PyResult<Vec<u8>> {
         let value = value.call_method0("get_value")?.extract::<u128>()?;
-        let (mut value, negative, limit) = { (value as u128, false, 0x7F) };
+        let (mut value, limit) = { (value as u128, 0x7F) };
         let mut values = Vec::new();
         while value > limit {
             values.push((value & 0xFF) as u8);
             value >>= 8;
         }
         values.push((value & 0xFF) as u8);
-
-        let len = values.len();
 
         values.reverse();
         Ok(values)

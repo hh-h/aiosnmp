@@ -200,7 +200,7 @@ impl Decoder {
     }
 
     fn decode_uinteger(py: Python, data: Vec<u8>) -> PyResult<&PyAny> {
-        let mut bytes = data;
+        let bytes = data;
 
         let mut value: u128 = 0;
         for byte in bytes {
