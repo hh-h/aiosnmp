@@ -39,15 +39,17 @@ class PDUType(enum.IntEnum):
 
 
 class SnmpVarbind:
-    __slots__ = ("_oid", "_value")
+    __slots__ = ("_oid", "_value", "_number")
 
     def __init__(
         self,
         oid: str,
         value: Union[None, str, int, bytes, ipaddress.IPv4Address] = None,
+        number: Optional[Number] = None,
     ) -> None:
         self._oid: str = oid.lstrip(".")
         self._value: Union[None, str, int, bytes, ipaddress.IPv4Address] = value
+        self._number: Optional[Number] = number
 
     @property
     def oid(self) -> str:
@@ -61,10 +63,16 @@ class SnmpVarbind:
 
         return self._value
 
+    @property
+    def number(self) -> Optional[Number]:
+        """This property stores number of the message"""
+
+        return self._number
+
     def encode(self, encoder: Encoder) -> None:
         encoder.enter(Number.Sequence)
         encoder.write(self._oid, Number.ObjectIdentifier)
-        encoder.write(self.value)
+        encoder.write(self.value, self.number)
         encoder.exit()
 
 
