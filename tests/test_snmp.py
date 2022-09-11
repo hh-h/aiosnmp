@@ -3,7 +3,7 @@ from typing import Any, List, Tuple, Union
 
 import pytest
 
-from aiosnmp import Number, Snmp
+from aiosnmp import Snmp, asn1
 
 
 @pytest.mark.asyncio
@@ -155,11 +155,11 @@ async def test_snmp_multiple_oids(host: str, port: int, oids: List[str], values:
             (".1.3.6.1.4.1.8072.2.255.1.0", b"test_bytes"),
             (".1.3.6.1.4.1.8072.2.255.6.0", 42),
         ],
-        [(".1.3.6.1.4.1.8072.2.255.6.0", 42, Number.Gauge32)],
+        [(".1.3.6.1.4.1.8072.2.255.6.0", 42, asn1.Number.Gauge32)],
         [
             (".1.3.6.1.4.1.8072.2.255.1.0", b"test_bytes"),
             (".1.3.6.1.4.1.8072.2.255.5.0", 42),
-            (".1.3.6.1.4.1.8072.2.255.6.0", 42, Number.Counter32),
+            (".1.3.6.1.4.1.8072.2.255.6.0", 42, asn1.Number.Counter32),
         ],
     ),
 )

@@ -33,7 +33,7 @@ async def main():
             print(res.oid, res.value)
 
         # set with custom number
-        results = await snmp.set([(".1.3.6.1.2.1.1.4.0", 10, aiosnmp.Number.Gauge32)])
+        results = await snmp.set([(".1.3.6.1.2.1.1.4.0", 10, aiosnmp.asn1.Number.Gauge32)])
         for res in results:
             print(res.oid, res.value)
 
