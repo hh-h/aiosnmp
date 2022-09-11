@@ -169,7 +169,7 @@ class Snmp(SnmpConnection):
     async def set(self, varbinds: List[Union[SetParamsWithoutType, SetParamsWithType]]) -> List[SnmpVarbind]:
         """The set method is used to modify the value(s) of the managed object.
 
-        :param varbinds: list of tuples [oid, int/str/bytes/ipv4] or [oid, int/str/bytes/ipv4, snmpnumber]
+        :param varbinds: list of tuples [oid, int/str/bytes/ipv4] or [oid, int/str/bytes/ipv4, SnmpType]
         :return: list of :class:`SnmpVarbind <aiosnmp.message.SnmpVarbind>`
 
         Example
@@ -180,7 +180,7 @@ class Snmp(SnmpConnection):
                for res in await snmp.set([
                    (".1.3.6.1.2.1.1.1.0", 10),
                    (".1.3.6.1.2.1.1.1.1", "hello"),
-                   (".1.3.6.1.2.1.1.1.11", 10, Number.Gauge32),
+                   (".1.3.6.1.2.1.1.1.11", 10, SnmpType.Gauge32),
                ]):
                    print(res.oid, res.value)
 
