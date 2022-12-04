@@ -32,5 +32,10 @@ async def main():
         for res in results:
             print(res.oid, res.value)
 
+        # set with custom number
+        results = await snmp.set([(".1.3.6.1.2.1.1.4.0", 10, aiosnmp.SnmpType.Gauge32)])
+        for res in results:
+            print(res.oid, res.value)
+
 
 asyncio.run(main())

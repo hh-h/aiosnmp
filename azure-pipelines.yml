@@ -218,7 +218,7 @@ jobs:
           artifact: linux_wheels
           path: $(System.DefaultWorkingDirectory)/wheels
 
-      - script: pip install --find-links $(System.DefaultWorkingDirectory)/wheels aiosnmp
+      - script: pip install --no-index --find-links $(System.DefaultWorkingDirectory)/wheels aiosnmp
         displayName: 'Install aiosnmp'
 
       - script: pip install pytest==$(pytest_ver) pytest-asyncio==$(pytest_asyncio_ver) uvloop==$(uvloop_ver)

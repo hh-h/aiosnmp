@@ -4,9 +4,13 @@ import ipaddress
 from types import TracebackType
 from typing import Any, List, Optional, Tuple, Type, Union
 
+from .asn1 import Number
 from .connection import SnmpConnection
 from .exceptions import SnmpUnsupportedValueType
 from .message import GetBulkRequest, GetNextRequest, GetRequest, SetRequest, SnmpMessage, SnmpVarbind, SnmpVersion
+
+SetParamsWithoutType = Tuple[str, Union[int, str, bytes, ipaddress.IPv4Address]]
+SetParamsWithType = Tuple[str, Union[int, str, bytes, ipaddress.IPv4Address], Optional[Number]]
 
 
 class Snmp(SnmpConnection):
@@ -162,10 +166,10 @@ class Snmp(SnmpConnection):
             varbinds.append(vbs[0])
         return varbinds
 
-    async def set(self, varbinds: List[Tuple[str, Union[int, str, bytes, ipaddress.IPv4Address]]]) -> List[SnmpVarbind]:
+    async def set(self, varbinds: List[Union[SetParamsWithoutType, SetParamsWithType]]) -> List[SnmpVarbind]:
         """The set method is used to modify the value(s) of the managed object.
 
-        :param varbinds: list of tuples[oid, int/str/bytes/ipv4]
+        :param varbinds: list of tuples [oid, int/str/bytes/ipv4] or [oid, int/str/bytes/ipv4, SnmpType]
         :return: list of :class:`SnmpVarbind <aiosnmp.message.SnmpVarbind>`
 
         Example
@@ -176,18 +180,27 @@ class Snmp(SnmpConnection):
                for res in await snmp.set([
                    (".1.3.6.1.2.1.1.1.0", 10),
                    (".1.3.6.1.2.1.1.1.1", "hello"),
+                   (".1.3.6.1.2.1.1.1.11", 10, SnmpType.Gauge32),
                ]):
                    print(res.oid, res.value)
 
         """
+        snmp_varbinds = []
         for varbind in varbinds:
             if not isinstance(varbind[1], (int, str, bytes, ipaddress.IPv4Address)):
                 raise SnmpUnsupportedValueType(f"Only int, str, bytes and ip address supported, got {type(varbind[1])}")
-        message = SnmpMessage(
-            self.version,
-            self.community,
-            SetRequest([SnmpVarbind(oid, value) for oid, value in varbinds]),
-        )
+
+            if len(varbind) == 2:
+                oid, value = varbind  # type: ignore[misc]
+                number = None
+            elif len(varbind) == 3:
+                oid, value, number = varbind  # type: ignore[misc]
+            else:
+                raise SnmpUnsupportedValueType(f"varbinds can consist of only two or three values, got {len(varbind)}")
+
+            snmp_varbinds.append(SnmpVarbind(oid, value, number))
+
+        message = SnmpMessage(self.version, self.community, SetRequest(snmp_varbinds))
         return await self._send(message)
 
     async def bulk_walk(

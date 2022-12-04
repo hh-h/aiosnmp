@@ -86,12 +86,12 @@ impl Encoder {
 impl Encoder {
     fn _encode_value(&self, number: u8, value: &PyAny) -> PyResult<Vec<u8>> {
         let value = match number {
-            0x02 | 0x0A => Encoder::_encode_integer(value)?,
+            0x02 | 0x0A | 0x41 | 0x42 | 0x43 | 0x46 | 0x47 => Encoder::_encode_integer(value)?,
             0x04 | 0x13 => Encoder::_encode_octet_string(value)?,
             0x01 => Encoder::_encode_boolean(value)?,
             0x05 => Encoder::_encode_null(value),
             0x06 => Encoder::_encode_object_identifier(value)?,
-            0x40 => Encoder::encode_ip_address(value)?,
+            0x40 => Encoder::_encode_ip_address(value)?,
             _ => return Err(Error::new_err(format!("Unhandled Number {} value {}", number, value))),
         };
         Ok(value)
@@ -183,7 +183,7 @@ impl Encoder {
         result.reverse();
         Ok(result)
     }
-    fn encode_ip_address(value: &PyAny) -> PyResult<Vec<u8>> {
+    fn _encode_ip_address(value: &PyAny) -> PyResult<Vec<u8>> {
         let value = value.call_method0("__int__")?.extract::<u32>()?;
         Ok(value.to_be_bytes().to_vec())
     }
