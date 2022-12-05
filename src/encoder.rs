@@ -160,8 +160,7 @@ impl Encoder {
         let value: Vec<u32> = value
             .split('.')
             .map(|x| x.parse::<u32>())
-            .filter(|x| x.is_ok())
-            .map(|x| x.unwrap())
+            .filter_map(|x| x.ok())
             .collect();
 
         if value[0] > 39 || value[1] > 39 {

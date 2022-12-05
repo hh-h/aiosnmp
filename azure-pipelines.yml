@@ -6,16 +6,16 @@ pr:
   - master
 
 variables:
-  pytest_ver: 7.1.2
-  mypy_ver: 0.971
+  pytest_ver: 7.2.0
+  mypy_ver: 0.991
   isort_ver: 5.10.1
   flake8_ver: 5.0.4
-  black_ver: 22.6.0
-  cibuildwheel_ver: 2.9.0
-  setuptools_rust_ver: 1.5.1
-  pytest_asyncio_ver: 0.19.0
-  uvloop_ver: 0.16.0
-  pytest_cov_ver: 3.0.0
+  black_ver: 22.10.0
+  cibuildwheel_ver: 2.11.2
+  setuptools_rust_ver: 1.5.2
+  pytest_asyncio_ver: 0.20.2
+  uvloop_ver: 0.17.0
+  pytest_cov_ver: 4.0.0
   codecov_ver: 2.1.12
   windows_image: 'windows-2022'
   linux_image: 'ubuntu-22.04'
@@ -68,7 +68,7 @@ jobs:
       vmImage: $(macos_image)
 
     variables:
-      CIBW_BUILD: cp3{7,8,9,10}-*
+      CIBW_BUILD: cp3{7,8,9,10,11}-*
       CIBW_TEST_REQUIRES: pytest==$(pytest_ver)
       CIBW_TEST_COMMAND: pytest $(Build.SourcesDirectory)/tests/test_asn1.py
 
@@ -96,7 +96,7 @@ jobs:
     pool:
       vmImage: $(linux_image)
     variables:
-      CIBW_BUILD: cp3{7,8,9,10}-*
+      CIBW_BUILD: cp3{7,8,9,10,11}-*
       CIBW_SKIP: "*_i686"
       CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
       CIBW_BEFORE_ALL: curl https://sh.rustup.rs -sSf | sh -s -- -y
@@ -128,7 +128,7 @@ jobs:
     pool:
       vmImage: $(windows_image)
     variables:
-      CIBW_BUILD: cp3{7,8,9,10}-*
+      CIBW_BUILD: cp3{7,8,9,10,11}-*
       CIBW_SKIP: "*-win32"
       CIBW_TEST_REQUIRES: pytest==$(pytest_ver)
       CIBW_TEST_COMMAND: pytest $(Build.SourcesDirectory)\\tests\\test_asn1.py
@@ -204,6 +204,12 @@ jobs:
           loop: 'asyncio'
         Python310-uvloop:
           python.version: '3.10'
+          loop: 'uvloop'
+        Python311-asyncio:
+          python.version: '3.11'
+          loop: 'asyncio'
+        Python311-uvloop:
+          python.version: '3.11'
           loop: 'uvloop'
 
     steps:
