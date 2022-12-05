@@ -1,5 +1,5 @@
 __all__ = ("Snmp", "SnmpV2TrapMessage", "SnmpV2TrapServer", "exceptions", "SnmpVarbind", "SnmpType")
-__version__ = "0.7.0"
+__version__ = "0.7.1"
 __author__ = "Valetov Konstantin"
 
 from .asn1 import Number as SnmpType

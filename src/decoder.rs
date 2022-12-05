@@ -244,7 +244,7 @@ impl Decoder {
         int_ip += data[1] as u32 * 256_u32.pow(2);
         int_ip += data[2] as u32 * 256_u32;
         int_ip += data[3] as u32;
-        let pt = PyTuple::new(py, &[int_ip]);
+        let pt = PyTuple::new(py, [int_ip]);
         let ipaddress = PyModule::import(py, "ipaddress")?;
         let ipv4 = ipaddress.getattr("IPv4Address")?.call1(pt)?;
         Ok(ipv4)
