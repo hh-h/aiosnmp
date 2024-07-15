@@ -1,3 +1,4 @@
 tox==3.27.1
 tox-docker==3.1.0
 setuptools-rust==1.5.2
+setuptools>=70.0.0 # not directly required, pinned by Snyk to avoid a vulnerability
