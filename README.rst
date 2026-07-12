@@ -34,6 +34,14 @@ aiosnmp
 
 aiosnmp is an asynchronous SNMP client for use with asyncio.
 
+Maintenance Status
+------------------
+
+I do not work in network areas anymore and do not have time to maintain this project.
+
+If you need an actively maintained alternative, use `gufolabs/gufo_snmp <https://github.com/gufolabs/gufo_snmp>`_.
+It provides async support and SNMPv3 support.
+
 Installation
 ------------
 
@@ -74,12 +82,6 @@ Basic Usage
    asyncio.run(main())
 
 more in `/examples <https://github.com/hh-h/aiosnmp/tree/master/examples>`_
-
-TODO
-----
-
-* snmp v3 support
-* more tests
 
 License
 -------
